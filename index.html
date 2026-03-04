@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeoMath Adventure!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://d3js.org/topojson.v3.min.js"></script>
+  <style>
+    :root {
+      --blue: #4361ee;
+      --purple: #7209b7;
+      --green: #06d6a0;
+      --red: #ef476f;
+      --gold: #ffd166;
+      --orange: #f77f00;
+      --dark: #1a1a2e;
+      --light: #f8f9fa;
+      --card: #ffffff;
+      --shadow: 0 8px 32px rgba(0,0,0,0.15);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      overflow-x: hidden;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #app {
+      width: 100%;
+      max-width: 600px;
+      min-height: 500px;
+      position: relative;
+      z-index: 1;
+    }
+    .screen { display: none; }
+    .screen.active { display: block; animation: fadeIn 0.4s ease; }
+    h1, h2, h3 { font-family: 'Fredoka One', cursive; }
+
+    /* ---- WELCOME ---- */
+    .welcome {
+      text-align: center;
+      background: var(--card);
+      border-radius: 24px;
+      padding: 48px 32px;
+      box-shadow: var(--shadow);
+    }
+    .welcome .globe { font-size: 80px; display: block; animation: bounce 2s ease-in-out infinite; }
+    .welcome h1 {
+      font-size: 2.4em;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin: 16px 0 8px;
+    }
+    .welcome p { color: #666; font-size: 1.1em; font-weight: 600; margin-bottom: 8px; }
+    .welcome .best-score { color: var(--orange); font-weight: 800; font-size: 1em; margin-bottom: 24px; min-height: 24px; }
+    .btn-start {
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: white; border: none; padding: 18px 48px; font-size: 1.4em;
+      font-family: 'Fredoka One', cursive; border-radius: 50px; cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 15px rgba(114,9,183,0.4); animation: pulse 2s ease-in-out infinite;
+    }
+    .btn-start:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(114,9,183,0.6); }
+
+    /* ---- GAME ---- */
+    .game-screen { background: var(--card); border-radius: 24px; padding: 24px; box-shadow: var(--shadow); }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 8px; }
+    .progress-text { font-weight: 800; color: var(--purple); font-size: 1em; }
+    .score-display { font-weight: 800; color: var(--blue); font-size: 1.1em; }
+    .streak-display { font-weight: 800; color: var(--orange); font-size: 1em; min-width: 60px; text-align: right; }
+    .progress-bar { width: 100%; height: 8px; background: #e9ecef; border-radius: 4px; margin-bottom: 20px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--purple)); border-radius: 4px; transition: width 0.5s ease; }
+
+    /* ---- MINI MAP ---- */
+    .mini-map-wrap {
+      margin-bottom: 16px; border-radius: 16px; overflow: hidden;
+      background: linear-gradient(135deg, #0c1445, #162055);
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.4); position: relative;
+    }
+    .mini-map-wrap svg { display: block; width: 100%; height: auto; }
+    .country-default { fill: #1e3a5f; stroke: #2a4a70; stroke-width: 0.4; transition: fill 0.4s ease; }
+    .country-highlight { fill: #ffd166; stroke: #ffba08; stroke-width: 0.8; }
+    .ocean-bg { fill: #0c1445; }
+    .map-graticule { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 0.3; }
+    .map-pin-ring { animation: pingRing 1.5s ease-out infinite; }
+    @keyframes pingRing { 0% { r: 4; opacity: 0.7; } 100% { r: 14; opacity: 0; } }
+    .map-label-bg { filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6)); }
+
+    /* ---- BONUS ROUND ---- */
+    .bonus-active .mini-map-wrap { border: 2px solid var(--gold); box-shadow: 0 0 20px rgba(255,209,102,0.3); }
+    .bonus-header { display: none; text-align: center; margin-bottom: 12px; }
+    .bonus-active .bonus-header { display: block; animation: fadeIn 0.4s ease; }
+    .bonus-active .category-badge { display: none; }
+    .bonus-badge { font-family: 'Fredoka One', cursive; font-size: 1.3em; color: var(--gold); text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .bonus-subtitle { color: #888; font-weight: 700; font-size: 0.9em; margin-top: 4px; }
+
+    /* ---- QUESTION ---- */
+    .category-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: linear-gradient(135deg, #e8e0ff, #ffe0f0);
+      padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 0.9em;
+      color: var(--purple); margin-bottom: 16px;
+    }
+    .category-badge .emoji { font-size: 1.3em; }
+    .question-text { font-size: 1.25em; font-weight: 700; color: var(--dark); line-height: 1.5; margin-bottom: 24px; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .option-btn {
+      padding: 16px; border: 3px solid #e9ecef; border-radius: 16px; background: white;
+      font-size: 1.1em; font-weight: 700; font-family: 'Nunito', sans-serif;
+      cursor: pointer; transition: all 0.2s; color: var(--dark); position: relative; overflow: hidden;
+    }
+    .option-btn:hover:not(.disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .option-btn.opt-a { border-color: #4361ee40; }
+    .option-btn.opt-a:hover:not(.disabled) { border-color: var(--blue); background: #4361ee10; }
+    .option-btn.opt-b { border-color: #06d6a040; }
+    .option-btn.opt-b:hover:not(.disabled) { border-color: var(--green); background: #06d6a010; }
+    .option-btn.opt-c { border-color: #f77f0040; }
+    .option-btn.opt-c:hover:not(.disabled) { border-color: var(--orange); background: #f77f0010; }
+    .option-btn.opt-d { border-color: #7209b740; }
+    .option-btn.opt-d:hover:not(.disabled) { border-color: var(--purple); background: #7209b710; }
+    .option-btn.correct { border-color: var(--green) !important; background: #06d6a020 !important; animation: correctPop 0.4s ease; }
+    .option-btn.wrong { border-color: var(--red) !important; background: #ef476f15 !important; animation: shake 0.4s ease; }
+    .option-btn.disabled { pointer-events: none; opacity: 0.7; }
+    .option-btn.correct.disabled { opacity: 1; }
+
+    /* ---- FEEDBACK ---- */
+    .feedback { margin-top: 20px; padding: 20px; border-radius: 16px; animation: slideUp 0.3s ease; display: none; }
+    .feedback.show { display: block; }
+    .feedback.correct-feedback { background: linear-gradient(135deg, #d4f5e9, #e8faf2); border: 2px solid var(--green); }
+    .feedback.wrong-feedback { background: linear-gradient(135deg, #fde8ed, #fdf0f3); border: 2px solid var(--red); }
+    .feedback-header { font-family: 'Fredoka One', cursive; font-size: 1.3em; margin-bottom: 8px; }
+    .feedback.correct-feedback .feedback-header { color: #05a880; }
+    .feedback.wrong-feedback .feedback-header { color: var(--red); }
+    .feedback .points { font-weight: 800; color: var(--gold); font-size: 1.1em; text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .feedback .fun-fact { margin-top: 12px; padding: 12px; background: rgba(255,255,255,0.7); border-radius: 12px; font-size: 0.95em; color: #555; line-height: 1.5; }
+    .feedback .fun-fact strong { color: var(--purple); }
+    .btn-next {
+      margin-top: 16px; background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: white; border: none; padding: 14px 36px; font-size: 1.1em;
+      font-family: 'Fredoka One', cursive; border-radius: 50px; cursor: pointer;
+      transition: transform 0.2s; box-shadow: 0 4px 12px rgba(67,97,238,0.3);
+    }
+    .btn-next:hover { transform: scale(1.05); }
+
+    /* ---- RESULTS ---- */
+    .results-screen { background: var(--card); border-radius: 24px; padding: 40px 32px; box-shadow: var(--shadow); text-align: center; }
+    .results-screen h2 { font-size: 2em; color: var(--purple); margin-bottom: 8px; }
+    .results-title { font-size: 1.2em; color: var(--orange); font-weight: 800; margin-bottom: 20px; }
+    .results-score {
+      font-family: 'Fredoka One', cursive; font-size: 4em;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.1;
+    }
+    .results-label { color: #999; font-weight: 700; font-size: 1.1em; margin-bottom: 20px; }
+    .stars-display { font-size: 3em; margin: 16px 0; letter-spacing: 8px; }
+    .star { display: inline-block; animation: starPop 0.4s ease forwards; opacity: 0; }
+    .star:nth-child(1) { animation-delay: 0.2s; }
+    .star:nth-child(2) { animation-delay: 0.4s; }
+    .star:nth-child(3) { animation-delay: 0.6s; }
+    .star:nth-child(4) { animation-delay: 0.8s; }
+    .star:nth-child(5) { animation-delay: 1.0s; }
+    .results-stats { display: flex; justify-content: center; gap: 32px; margin: 24px 0; flex-wrap: wrap; }
+    .stat-item { text-align: center; }
+    .stat-value { font-family: 'Fredoka One', cursive; font-size: 1.8em; color: var(--blue); }
+    .stat-label { font-size: 0.85em; color: #888; font-weight: 700; }
+    .btn-play-again {
+      background: linear-gradient(135deg, var(--green), #00b894);
+      color: white; border: none; padding: 18px 48px; font-size: 1.3em;
+      font-family: 'Fredoka One', cursive; border-radius: 50px; cursor: pointer;
+      transition: transform 0.2s; box-shadow: 0 4px 15px rgba(6,214,160,0.4); margin-top: 8px;
+    }
+    .btn-play-again:hover { transform: scale(1.05); }
+    .new-best { color: var(--gold); font-family: 'Fredoka One', cursive; font-size: 1.2em; animation: pulse 1s ease-in-out infinite; margin-bottom: 8px; }
+
+    /* ---- CONFETTI ---- */
+    #confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; overflow: hidden; }
+    .confetti-piece { position: absolute; width: 10px; height: 10px; border-radius: 2px; animation: confettiFall 1.5s ease-out forwards; }
+
+    /* ---- ANIMATIONS ---- */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    @keyframes correctPop { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+    @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+    @keyframes starPop { 0% { opacity: 0; transform: scale(0) rotate(-30deg); } 60% { opacity: 1; transform: scale(1.3) rotate(10deg); } 100% { opacity: 1; transform: scale(1) rotate(0deg); } }
+    @keyframes confettiFall { 0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); } 100% { opacity: 0; transform: translateY(600px) rotate(720deg) scale(0.5); } }
+    @keyframes scoreFloat { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-60px) scale(1.5); } }
+    .score-float { position: absolute; font-family: 'Fredoka One', cursive; font-size: 1.4em; color: var(--gold); pointer-events: none; animation: scoreFloat 1s ease-out forwards; z-index: 100; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+    @media (max-width: 480px) {
+      .welcome h1 { font-size: 1.8em; }
+      .welcome { padding: 32px 20px; }
+      .game-screen { padding: 16px; }
+      .question-text { font-size: 1.1em; }
+      .options-grid { grid-template-columns: 1fr; }
+      .option-btn { padding: 14px; }
+      .results-screen { padding: 32px 20px; }
+      .results-score { font-size: 3em; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <div id="welcome-screen" class="screen active welcome">
+    <span class="globe">🌍</span>
+    <h1>GeoMath Adventure!</h1>
+    <p>Geography + Math = Awesome!</p>
+    <p style="color:#999; font-size:0.9em; margin-bottom: 4px;">10 questions per round</p>
+    <div id="best-score" class="best-score"></div>
+    <button class="btn-start" onclick="startGame()">Let's Go!</button>
+  </div>
+
+  <div id="game-screen" class="screen game-screen">
+    <div class="top-bar">
+      <span class="progress-text" id="progress-text">Q 1/10</span>
+      <span class="score-display" id="score-display">Score: 0</span>
+      <span class="streak-display" id="streak-display"></span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+    </div>
+    <div class="mini-map-wrap">
+      <svg id="mini-map"></svg>
+    </div>
+    <div class="bonus-header" id="bonus-header">
+      <div class="bonus-badge">⭐ BONUS ROUND ⭐</div>
+      <div class="bonus-subtitle">Did you read the fun fact?</div>
+    </div>
+    <div class="category-badge">
+      <span class="emoji" id="q-emoji">🌍</span>
+      <span id="q-category">Africa</span>
+    </div>
+    <div class="question-text" id="q-text"></div>
+    <div class="options-grid" id="options-grid"></div>
+    <div class="feedback" id="feedback">
+      <div class="feedback-header" id="feedback-header"></div>
+      <div id="feedback-points"></div>
+      <div class="fun-fact" id="fun-fact"></div>
+      <button class="btn-next" id="btn-next" onclick="nextQuestion()">Next Question</button>
+    </div>
+  </div>
+
+  <div id="results-screen" class="screen results-screen">
+    <h2>Round Complete!</h2>
+    <div class="results-title" id="results-title"></div>
+    <div class="results-score" id="results-score">0</div>
+    <div class="results-label">points</div>
+    <div class="stars-display" id="stars-display"></div>
+    <div id="new-best"></div>
+    <div class="results-stats">
+      <div class="stat-item"><div class="stat-value" id="stat-correct">0</div><div class="stat-label">Correct</div></div>
+      <div class="stat-item"><div class="stat-value" id="stat-streak">0</div><div class="stat-label">Best Streak</div></div>
+    </div>
+    <button class="btn-play-again" onclick="startGame()">Play Again!</button>
+  </div>
+</div>
+
+<div id="confetti-container"></div>
+
+<script>
+// ==================== QUESTION BANK ====================
+// h = highlight country ISO code(s), lat/lon = pin position
+const questions = [
+  // ======== AFRICA ========
+  { question: "Africa has 54 countries! If you visit 6 countries each year, how many years will it take to visit them all?",
+    options: ["7","8","9","10"], correct: 2, emoji: "🌍", category: "Africa",
+    funFact: "Africa is the second-largest continent and home to the world's largest desert, the Sahara!",
+    lat: 2, lon: 20, mapLabel: "Africa", h: null },
+  { question: "Egypt has 3 Great Pyramids at Giza. If each pyramid has 4 triangular faces, how many faces is that in total?",
+    options: ["9","12","15","7"], correct: 1, emoji: "🇪🇬", category: "Egypt",
+    funFact: "The Great Pyramid of Giza was the tallest building in the world for over 3,800 years!",
+    lat: 29.9, lon: 31.1, mapLabel: "Egypt", h: ["818"] },
+  { question: "The Nile River flows through 11 countries. If a boat stops at 3 cities in each country, how many stops is that?",
+    options: ["30","33","36","22"], correct: 1, emoji: "🏞️", category: "Africa",
+    funFact: "The Nile is about 6,650 km long, making it one of the longest rivers in the world!",
+    lat: 15, lon: 30, mapLabel: "Nile River", h: ["818","736","800"] },
+  { question: "Madagascar has 8 national parks on its east coast. If each park protects 7 species of lemur, how many lemur species is that?",
+    options: ["48","54","56","63"], correct: 2, emoji: "🇲🇬", category: "Madagascar",
+    funFact: "Lemurs are found only in Madagascar! There are over 100 species of lemur on the island.",
+    lat: -18.9, lon: 47.5, mapLabel: "Madagascar", h: ["450"] },
+  { question: "Mount Kilimanjaro is the tallest mountain in Africa. A climber takes 42 photos and sorts them into 6 equal albums. How many photos per album?",
+    options: ["6","7","8","9"], correct: 1, emoji: "🏔️", category: "Tanzania",
+    funFact: "Mount Kilimanjaro is 5,895 meters tall and is actually a dormant volcano!",
+    lat: -3.1, lon: 37.4, mapLabel: "Kilimanjaro", h: ["834"] },
+  { question: "South Africa has 11 official languages! If each language has 12 unique greeting phrases, how many phrases is that?",
+    options: ["121","132","144","120"], correct: 1, emoji: "🇿🇦", category: "South Africa",
+    funFact: "South Africa is the only country in the world with three capital cities!",
+    lat: -30, lon: 25, mapLabel: "South Africa", h: ["710"] },
+  { question: "Lake Victoria is shared by 3 countries. If 36 fishing boats are divided equally among them, how many per country?",
+    options: ["9","10","12","15"], correct: 2, emoji: "🐟", category: "East Africa",
+    funFact: "Lake Victoria is Africa's largest lake and the source of the White Nile!",
+    lat: -1, lon: 33, mapLabel: "Lake Victoria", h: ["834","800","404"] },
+  { question: "Nigeria has 36 states. If you visit 4 states per week, how many weeks for all 36?",
+    options: ["7","8","9","10"], correct: 2, emoji: "🇳🇬", category: "Nigeria",
+    funFact: "Nigeria is Africa's most populated country with over 200 million people!",
+    lat: 9.1, lon: 7.5, mapLabel: "Nigeria", h: ["566"] },
+  { question: "Ghana's coastline has 84 fishing villages. If they split into 7 equal regions, how many villages per region?",
+    options: ["10","11","12","14"], correct: 2, emoji: "🇬🇭", category: "Ghana",
+    funFact: "Ghana was the first country in sub-Saharan Africa to gain independence, in 1957!",
+    lat: 7.9, lon: -1.0, mapLabel: "Ghana", h: ["288"] },
+  { question: "Ethiopia has 13 months in its calendar! If each month has 4 holiday celebrations, how many celebrations per year?",
+    options: ["48","50","52","56"], correct: 2, emoji: "🇪🇹", category: "Ethiopia",
+    funFact: "Ethiopia's calendar really does have 13 months — the 13th month has only 5 or 6 days!",
+    lat: 9.1, lon: 40.5, mapLabel: "Ethiopia", h: ["231"] },
+  { question: "The Serengeti has huge animal migrations. If 144 zebras form 12 equal herds, how many per herd?",
+    options: ["10","11","12","14"], correct: 2, emoji: "🦓", category: "Tanzania",
+    funFact: "Over 2 million animals migrate through the Serengeti every year — it's the largest migration on Earth!",
+    lat: -2.3, lon: 34.8, mapLabel: "Serengeti", h: ["834"] },
+  { question: "Tunisia has 8 UNESCO World Heritage Sites. If each site has 11 guided tours per day, how many tours total?",
+    options: ["77","84","88","96"], correct: 2, emoji: "🇹🇳", category: "Tunisia",
+    funFact: "Tunisia has ancient Roman ruins, including a massive amphitheater in El Jem!",
+    lat: 33.9, lon: 9.5, mapLabel: "Tunisia", h: ["788"] },
+  { question: "Rwanda is known as the land of a thousand hills. If 108 hills are explored by 9 hiking teams equally, how many hills per team?",
+    options: ["9","10","12","14"], correct: 2, emoji: "🇷🇼", category: "Rwanda",
+    funFact: "Rwanda is home to endangered mountain gorillas — only about 1,000 remain in the wild!",
+    lat: -2, lon: 29.9, mapLabel: "Rwanda", h: ["646"] },
+  { question: "The Sahara Desert covers 9 million square km. If you divide it into 3 equal zones, how many million sq km each?",
+    options: ["2","3","4","5"], correct: 1, emoji: "🏜️", category: "Africa",
+    funFact: "The Sahara is almost as big as the entire United States! And it's not all sand — much of it is rocky.",
+    lat: 23.4, lon: 3, mapLabel: "Sahara", h: null },
+  { question: "Kenya is home to 4 of Africa's Big Five animals. If a safari jeep spots 9 of each type, how many animals total?",
+    options: ["27","32","36","45"], correct: 2, emoji: "🦁", category: "Kenya",
+    funFact: "The Big Five are lion, elephant, buffalo, leopard, and rhino. Kenya's Maasai Mara is one of the best places to see them!",
+    lat: -0.02, lon: 37.9, mapLabel: "Kenya", h: ["404"] },
+  { question: "Morocco has 9 UNESCO sites. If a family spends 3 days at each, how many days touring UNESCO sites?",
+    options: ["21","24","27","30"], correct: 2, emoji: "🇲🇦", category: "Morocco",
+    funFact: "Morocco is home to the oldest university in the world, the University of al-Qarawiyyin, founded in 859 AD!",
+    lat: 31.8, lon: -7.1, mapLabel: "Morocco", h: ["504"] },
+  { question: "Botswana's Okavango Delta floods each year. If 11 safari camps each hold 12 guests, how many guests total?",
+    options: ["120","132","140","144"], correct: 1, emoji: "🐘", category: "Botswana",
+    funFact: "The Okavango Delta is one of the few large inland deltas in the world and is a UNESCO World Heritage Site!",
+    lat: -19.8, lon: 22.4, mapLabel: "Botswana", h: ["72"] },
+
+  // ======== ASIA ========
+  { question: "Japan has 4 main islands. If you visit 8 temples on each island, how many temples will you see?",
+    options: ["24","28","32","36"], correct: 2, emoji: "🇯🇵", category: "Japan",
+    funFact: "Japan has over 80,000 temples! Many are hundreds of years old.",
+    lat: 36.2, lon: 138, mapLabel: "Japan", h: ["392"] },
+  { question: "India has 28 states. If you group them into 4 equal regions, how many states per region?",
+    options: ["5","6","7","8"], correct: 2, emoji: "🇮🇳", category: "India",
+    funFact: "India is the seventh-largest country in the world and has over 1.4 billion people!",
+    lat: 20.6, lon: 79, mapLabel: "India", h: ["356"] },
+  { question: "The Great Wall of China has 7 main sections open to visitors. If 9 tour guides work at each section, how many guides is that?",
+    options: ["56","63","72","49"], correct: 1, emoji: "🇨🇳", category: "China",
+    funFact: "The Great Wall of China stretches over 21,000 kilometers — more than half the Earth's circumference!",
+    lat: 40.4, lon: 116.6, mapLabel: "Great Wall", h: ["156"] },
+  { question: "There are 48 countries in Asia. If a geography class studies 8 countries each month, how many months to cover them all?",
+    options: ["4","5","6","7"], correct: 2, emoji: "🌏", category: "Asia",
+    funFact: "Asia is the largest and most populated continent, home to over 4.5 billion people!",
+    lat: 34, lon: 100, mapLabel: "Asia", h: null },
+  { question: "Thailand is known as the Land of Smiles. A market has 9 stalls, each selling 6 types of tropical fruit. How many types in total?",
+    options: ["45","48","54","56"], correct: 2, emoji: "🇹🇭", category: "Thailand",
+    funFact: "Thailand has over 1,500 islands! Its name means 'Land of the Free.'",
+    lat: 15.9, lon: 101, mapLabel: "Thailand", h: ["764"] },
+  { question: "Mongolia has 72 million livestock animals. If they are split equally among 9 provinces, how many million per province?",
+    options: ["6","7","8","9"], correct: 2, emoji: "🇲🇳", category: "Mongolia",
+    funFact: "Mongolia has more horses than people! It's one of the least densely populated countries on Earth.",
+    lat: 46.9, lon: 103.8, mapLabel: "Mongolia", h: ["496"] },
+  { question: "Indonesia has about 17,000 islands! If 132 islands are explored in 12 equal months, how many per month?",
+    options: ["9","10","11","12"], correct: 2, emoji: "🇮🇩", category: "Indonesia",
+    funFact: "Indonesia has more islands than any other country and is home to Komodo dragons!",
+    lat: -2.5, lon: 118, mapLabel: "Indonesia", h: ["360"] },
+  { question: "Cambodia's Angkor Wat complex has 12 main galleries. If each gallery has 8 stone carvings to study, how many carvings?",
+    options: ["84","90","96","108"], correct: 2, emoji: "🇰🇭", category: "Cambodia",
+    funFact: "Angkor Wat is the largest religious monument in the world!",
+    lat: 13.4, lon: 103.9, mapLabel: "Angkor Wat", h: ["116"] },
+  { question: "The Yangtze River in China is 6,300 km long. If a boat covers 9 km per hour, how far in 12 hours?",
+    options: ["96","108","112","120"], correct: 1, emoji: "🚢", category: "China",
+    funFact: "The Yangtze is the longest river in Asia and the third longest in the world!",
+    lat: 30.8, lon: 111.3, mapLabel: "Yangtze River", h: ["156"] },
+  { question: "Sri Lanka has 9 provinces. If each province grows 11 types of tea, how many types total?",
+    options: ["88","96","99","108"], correct: 2, emoji: "🇱🇰", category: "Sri Lanka",
+    funFact: "Sri Lanka is one of the world's top tea producers and is known as the 'Pearl of the Indian Ocean'!",
+    lat: 7.9, lon: 80.8, mapLabel: "Sri Lanka", h: ["144"] },
+  { question: "South Korea has 12 national parks on the mainland. If each park has 9 hiking trails, how many trails?",
+    options: ["96","99","108","112"], correct: 2, emoji: "🇰🇷", category: "South Korea",
+    funFact: "South Korea is famous for K-pop music and is one of the most technologically advanced countries!",
+    lat: 35.9, lon: 128, mapLabel: "South Korea", h: ["410"] },
+  { question: "Vietnam has 8 UNESCO World Heritage Sites. If each site gets 6 tour groups per day, how many groups total?",
+    options: ["42","48","54","56"], correct: 1, emoji: "🇻🇳", category: "Vietnam",
+    funFact: "Vietnam has the world's largest cave, Son Doong, which is so big it has its own weather system!",
+    lat: 14.1, lon: 108.3, mapLabel: "Vietnam", h: ["704"] },
+  { question: "Nepal has 8 of the world's 14 highest mountains. If 7 climbers attempt each peak, how many climbers is that?",
+    options: ["49","54","56","63"], correct: 2, emoji: "🇳🇵", category: "Nepal",
+    funFact: "Mount Everest, the world's tallest mountain at 8,849 meters, is on the border of Nepal and China!",
+    lat: 28.4, lon: 84.1, mapLabel: "Nepal", h: ["524"] },
+  { question: "The Philippines is made up of 7,641 islands! If you explore 4 islands every week for 3 weeks, how many islands?",
+    options: ["9","10","11","12"], correct: 3, emoji: "🇵🇭", category: "Philippines",
+    funFact: "The Philippines has some of the most beautiful beaches in the world and is part of the Coral Triangle!",
+    lat: 12.9, lon: 122, mapLabel: "Philippines", h: ["608"] },
+  { question: "The Trans-Siberian Railway crosses 8 time zones. If a train makes 12 stops per time zone, how many stops?",
+    options: ["84","90","96","108"], correct: 2, emoji: "🚂", category: "Russia",
+    funFact: "The Trans-Siberian Railway is the longest railway in the world at 9,289 km!",
+    lat: 55.8, lon: 90, mapLabel: "Siberia", h: ["643"] },
+  { question: "Jordan's ancient city of Petra has 800 monuments. If a tour group sees 12 monuments per hour for 4 hours, how many did they see?",
+    options: ["36","44","48","52"], correct: 2, emoji: "🏛️", category: "Jordan",
+    funFact: "Petra was carved directly into rose-red cliff faces over 2,000 years ago!",
+    lat: 30.3, lon: 35.4, mapLabel: "Petra", h: ["400"] },
+  { question: "The Gobi Desert spans Mongolia and China. If 72 camels are divided into 6 caravans, how many per caravan?",
+    options: ["10","11","12","14"], correct: 2, emoji: "🐫", category: "Mongolia",
+    funFact: "The Gobi Desert has freezing winters and is home to rare Bactrian (two-humped) camels!",
+    lat: 42.6, lon: 103, mapLabel: "Gobi Desert", h: ["496","156"] },
+  { question: "Japan has about 1,500 earthquakes every year. If there are about 125 earthquakes each month, how many in 4 months?",
+    options: ["400","450","500","550"], correct: 2, emoji: "🇯🇵", category: "Japan",
+    funFact: "Japan sits on the 'Ring of Fire,' a zone around the Pacific Ocean with lots of earthquakes and volcanoes!",
+    lat: 36.2, lon: 138, mapLabel: "Japan", h: ["392"] },
+  { question: "Turkey sits on 2 continents: Europe and Asia! If 6 tourists visit each continent side per hour, how many in 7 hours?",
+    options: ["72","78","84","90"], correct: 2, emoji: "🇹🇷", category: "Turkey",
+    funFact: "Istanbul is the only city in the world that sits on two continents, split by the Bosphorus!",
+    lat: 41, lon: 29, mapLabel: "Istanbul", h: ["792"] },
+
+  // ======== EUROPE ========
+  { question: "The Eiffel Tower has 3 floors you can visit. If 12 elevators run per floor, how many elevator rides happen?",
+    options: ["30","33","36","39"], correct: 2, emoji: "🇫🇷", category: "France",
+    funFact: "The Eiffel Tower was built in 1889 and is 330 meters tall. About 7 million people visit it each year!",
+    lat: 48.9, lon: 2.3, mapLabel: "Paris", h: ["250"] },
+  { question: "Italy is shaped like a boot! If 8 cities each have 7 famous fountains, how many fountains is that?",
+    options: ["49","54","56","63"], correct: 2, emoji: "🇮🇹", category: "Italy",
+    funFact: "Italy has more UNESCO World Heritage Sites than any other country in the world!",
+    lat: 41.9, lon: 12.6, mapLabel: "Italy", h: ["380"] },
+  { question: "Greece has about 6,000 islands, but only 227 are inhabited. If you divide 228 island visitors equally among 12 boats, how many per boat?",
+    options: ["17","18","19","20"], correct: 2, emoji: "🇬🇷", category: "Greece",
+    funFact: "The ancient Greeks invented the Olympic Games about 2,800 years ago!",
+    lat: 39.1, lon: 21.8, mapLabel: "Greece", h: ["300"] },
+  { question: "Iceland has 30 active volcanoes. If scientists study 5 each year, how many years to study them all?",
+    options: ["5","6","7","8"], correct: 1, emoji: "🇮🇸", category: "Iceland",
+    funFact: "Despite its name, Iceland is actually very green! And Greenland is actually very icy!",
+    lat: 64.1, lon: -18, mapLabel: "Iceland", h: ["352"] },
+  { question: "Spain has 44 UNESCO World Heritage Sites. If a family visits 4 sites per trip, how many trips do they need for 12 sites?",
+    options: ["2","3","4","5"], correct: 1, emoji: "🇪🇸", category: "Spain",
+    funFact: "Spain is famous for flamenco dancing and is one of the world's top producers of olive oil!",
+    lat: 40.5, lon: -3.7, mapLabel: "Spain", h: ["724"] },
+  { question: "The United Kingdom is made up of 4 countries. If each country has 11 popular castles, how many castles is that?",
+    options: ["40","44","48","36"], correct: 1, emoji: "🇬🇧", category: "United Kingdom",
+    funFact: "The UK has over 1,500 castles! Some are nearly 1,000 years old.",
+    lat: 53.5, lon: -2.2, mapLabel: "U.K.", h: ["826"] },
+  { question: "Norway has 1,190 fjords. If 7 fjords fit on each page of a photo book, how many photos fit on 9 pages?",
+    options: ["56","63","72","54"], correct: 1, emoji: "🇳🇴", category: "Norway",
+    funFact: "Norway's fjords were carved by glaciers millions of years ago. Some are over 1,000 meters deep!",
+    lat: 60.5, lon: 8.5, mapLabel: "Norway", h: ["578"] },
+  { question: "Poland has 16 regions called voivodeships. If each region has 7 historic castles, how many castles?",
+    options: ["98","105","112","119"], correct: 2, emoji: "🇵🇱", category: "Poland",
+    funFact: "Poland is home to Europe's last primeval forest, the Bialowieza Forest, where wild bison roam!",
+    lat: 51.9, lon: 19.1, mapLabel: "Poland", h: ["616"] },
+  { question: "The Alps stretch across 8 countries. If each country has 11 ski resorts in the Alps, how many resorts total?",
+    options: ["77","84","88","96"], correct: 2, emoji: "⛷️", category: "The Alps",
+    funFact: "The Alps are the highest and most extensive mountain range in Europe!",
+    lat: 46.5, lon: 10, mapLabel: "The Alps", h: null },
+  { question: "Finland has about 188,000 lakes! If 132 lakes are inspected by 11 scientists equally, how many per scientist?",
+    options: ["10","11","12","13"], correct: 2, emoji: "🇫🇮", category: "Finland",
+    funFact: "Finland is called the 'Land of a Thousand Lakes' — but it actually has 188,000!",
+    lat: 61.9, lon: 25.7, mapLabel: "Finland", h: ["246"] },
+  { question: "The Netherlands has 12 provinces. If each province has 9 windmills open to visitors, how many windmills?",
+    options: ["96","99","108","112"], correct: 2, emoji: "🇳🇱", category: "Netherlands",
+    funFact: "About one-third of the Netherlands is below sea level, protected by an amazing system of dikes!",
+    lat: 52.1, lon: 5.3, mapLabel: "Netherlands", h: ["528"] },
+  { question: "Belgium is famous for chocolate. If 12 chocolate shops each make 9 flavors, how many flavors total?",
+    options: ["96","100","108","112"], correct: 2, emoji: "🇧🇪", category: "Belgium",
+    funFact: "Belgium produces over 220,000 tons of chocolate per year and has chocolate shops everywhere!",
+    lat: 50.5, lon: 4.5, mapLabel: "Belgium", h: ["56"] },
+  { question: "Scotland has 12 famous lochs (lakes). If each loch has 7 fishing spots, how many spots total?",
+    options: ["72","77","84","91"], correct: 2, emoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", category: "Scotland",
+    funFact: "The most famous loch is Loch Ness, where people claim to have seen a mysterious monster called Nessie!",
+    lat: 57.5, lon: -5, mapLabel: "Scotland", h: ["826"] },
+  { question: "Romania has the Carpathian Mountains with 7 main ranges. If each range has 11 famous peaks, how many peaks total?",
+    options: ["66","70","77","84"], correct: 2, emoji: "🇷🇴", category: "Romania",
+    funFact: "Romania is home to Transylvania and the legend of Count Dracula!",
+    lat: 45.9, lon: 25, mapLabel: "Romania", h: ["642"] },
+  { question: "Denmark has 72 inhabited islands. If you visit 6 islands per day, how many days for all?",
+    options: ["10","11","12","14"], correct: 2, emoji: "🇩🇰", category: "Denmark",
+    funFact: "Denmark is home to the oldest amusement park in the world — Bakken, which opened in 1583!",
+    lat: 56, lon: 10, mapLabel: "Denmark", h: ["208"] },
+  { question: "The Colosseum in Rome once held 50,000 spectators. If 144 tourists enter in 12 tour groups, how many per group?",
+    options: ["10","11","12","14"], correct: 2, emoji: "🏟️", category: "Italy",
+    funFact: "The Colosseum is nearly 2,000 years old and could be flooded to stage mock sea battles!",
+    lat: 41.9, lon: 12.5, mapLabel: "Colosseum", h: ["380"] },
+  { question: "Switzerland has 48 mountains over 4,000 meters. If a climber conquers 8 per year, how many years for all 48?",
+    options: ["4","5","6","7"], correct: 2, emoji: "🇨🇭", category: "Switzerland",
+    funFact: "Switzerland has 4 official languages: German, French, Italian, and Romansh!",
+    lat: 46.8, lon: 8.2, mapLabel: "Switzerland", h: ["756"] },
+  { question: "Germany has 16 states. If each state has 3 traditional festivals, how many festivals is that?",
+    options: ["42","45","48","51"], correct: 2, emoji: "🇩🇪", category: "Germany",
+    funFact: "Germany is famous for Oktoberfest, the world's largest folk festival, held every year in Munich!",
+    lat: 51.2, lon: 10.4, mapLabel: "Germany", h: ["276"] },
+  { question: "Russia spans 11 time zones! If you spend 4 days in each time zone, how many days is the entire trip?",
+    options: ["40","44","48","52"], correct: 1, emoji: "🇷🇺", category: "Russia",
+    funFact: "Russia is the largest country in the world, covering over 17 million square kilometers!",
+    lat: 61.5, lon: 105, mapLabel: "Russia", h: ["643"] },
+  { question: "Portugal has 11 national parks. If each park has 8 walking trails, how many trails total?",
+    options: ["77","84","88","96"], correct: 2, emoji: "🇵🇹", category: "Portugal",
+    funFact: "Portuguese explorers sailed around the world in the 1500s and were the first Europeans to reach Japan!",
+    lat: 39.4, lon: -8.2, mapLabel: "Portugal", h: ["620"] },
+  { question: "Ireland is known as the Emerald Isle. If 108 sheep farms are in 9 counties equally, how many per county?",
+    options: ["10","11","12","14"], correct: 2, emoji: "🇮🇪", category: "Ireland",
+    funFact: "Ireland has more sheep than people — about 5 million sheep vs 5 million humans!",
+    lat: 53.1, lon: -7.7, mapLabel: "Ireland", h: ["372"] },
+
+  // ======== NORTH AMERICA ========
+  { question: "The USA has 50 states. If you visit 5 states per summer, how many summers to visit them all?",
+    options: ["8","9","10","12"], correct: 2, emoji: "🇺🇸", category: "USA",
+    funFact: "The USA stretches across 6 time zones, from Hawaii to the East Coast!",
+    lat: 39.8, lon: -98.6, mapLabel: "U.S.A.", h: ["840"] },
+  { question: "Canada has 10 provinces. If each province has 6 national parks, how many parks is that?",
+    options: ["50","56","60","66"], correct: 2, emoji: "🇨🇦", category: "Canada",
+    funFact: "Canada has more lakes than all other countries combined! It's also the second-largest country in the world.",
+    lat: 56, lon: -106, mapLabel: "Canada", h: ["124"] },
+  { question: "Mexico has 32 states. If a chef makes 4 different tacos in each state, how many taco recipes is that?",
+    options: ["96","108","120","128"], correct: 3, emoji: "🇲🇽", category: "Mexico",
+    funFact: "Mexico invented chocolate! The ancient Aztecs made a chocolate drink over 3,000 years ago.",
+    lat: 23.6, lon: -102.6, mapLabel: "Mexico", h: ["484"] },
+  { question: "The Grand Canyon is about 446 km long. If a hiker walks 6 km each day, how many km in 8 days?",
+    options: ["42","48","54","56"], correct: 1, emoji: "🏜️", category: "USA",
+    funFact: "The Grand Canyon is up to 1,800 meters deep and was carved by the Colorado River over millions of years!",
+    lat: 36.1, lon: -112.1, mapLabel: "Grand Canyon", h: ["840"] },
+  { question: "There are 7 countries in Central America. If each has 9 butterfly species you want to photograph, how many photos?",
+    options: ["56","63","72","49"], correct: 1, emoji: "🦋", category: "Central America",
+    funFact: "Central America is home to some of the most colorful butterflies and birds on Earth!",
+    lat: 14.6, lon: -87, mapLabel: "Central America", h: null },
+  { question: "Costa Rica has 5 active volcanoes. A photographer takes 11 pictures of each one. How many photos is that?",
+    options: ["45","50","55","60"], correct: 2, emoji: "🇨🇷", category: "Costa Rica",
+    funFact: "Costa Rica means 'Rich Coast' in Spanish and contains 5% of the world's biodiversity!",
+    lat: 10, lon: -84, mapLabel: "Costa Rica", h: ["188"] },
+  { question: "Alaska has 3 million lakes! If a bush pilot visits 12 lakes per trip for 11 trips, how many lakes?",
+    options: ["120","132","140","144"], correct: 1, emoji: "🏔️", category: "Alaska",
+    funFact: "Alaska is the largest US state and has more coastline than all other US states combined!",
+    lat: 64, lon: -153, mapLabel: "Alaska", h: ["840"] },
+  { question: "Hawaii has 8 main islands. If each island has 12 surfing beaches, how many surfing beaches total?",
+    options: ["84","90","96","108"], correct: 2, emoji: "🏄", category: "Hawaii",
+    funFact: "Hawaii is the most isolated population center on Earth — over 3,800 km from the nearest continent!",
+    lat: 20.8, lon: -156.3, mapLabel: "Hawaii", h: ["840"] },
+  { question: "The Mississippi River is about 3,730 km long. If 144 barges travel it in 12 convoys, how many per convoy?",
+    options: ["10","11","12","14"], correct: 2, emoji: "🚢", category: "USA",
+    funFact: "The Mississippi is the second-longest river in North America and drains 31 US states!",
+    lat: 32, lon: -90, mapLabel: "Mississippi", h: ["840"] },
+  { question: "Jamaica has 7 parishes on its north coast. If each parish has 12 beaches, how many beaches total?",
+    options: ["72","77","84","91"], correct: 2, emoji: "🇯🇲", category: "Jamaica",
+    funFact: "Jamaica is the birthplace of reggae music and the legendary musician Bob Marley!",
+    lat: 18.1, lon: -77.3, mapLabel: "Jamaica", h: ["388"] },
+  { question: "The Panama Canal connects 2 oceans. If 11 ships pass through per hour, how many in 12 hours?",
+    options: ["120","128","132","144"], correct: 2, emoji: "🚢", category: "Panama",
+    funFact: "The Panama Canal saves ships a 12,500 km journey around the bottom of South America!",
+    lat: 9.1, lon: -79.7, mapLabel: "Panama Canal", h: ["591"] },
+  { question: "The Statue of Liberty has 354 steps. If you climb 12 steps per minute, how many steps in 9 minutes?",
+    options: ["96","100","108","112"], correct: 2, emoji: "🗽", category: "USA",
+    funFact: "The Statue of Liberty was a gift from France and arrived in 214 wooden crates in 1885!",
+    lat: 40.7, lon: -74, mapLabel: "New York", h: ["840"] },
+  { question: "Greenland is the world's largest island! If 96 sled dogs are split into 8 teams, how many dogs per team?",
+    options: ["10","11","12","14"], correct: 2, emoji: "🏔️", category: "Greenland",
+    funFact: "Greenland's ice sheet is up to 3 km thick and contains 10% of the world's fresh water!",
+    lat: 72, lon: -40, mapLabel: "Greenland", h: ["304"] },
+  { question: "Cuba has 4,195 small islands called cays. If 8 cays each have 5 bird species, how many bird species is that?",
+    options: ["35","40","45","48"], correct: 1, emoji: "🇨🇺", category: "Cuba",
+    funFact: "Cuba is home to the bee hummingbird, the smallest bird in the world — only 5 cm long!",
+    lat: 21.5, lon: -78, mapLabel: "Cuba", h: ["192"] },
+  { question: "The Caribbean has 13 island countries. If each country has 4 popular dive sites, how many dive sites total?",
+    options: ["48","52","56","44"], correct: 1, emoji: "🏝️", category: "Caribbean",
+    funFact: "The Caribbean Sea is known for its crystal-clear turquoise water and colorful coral reefs!",
+    lat: 17, lon: -70, mapLabel: "Caribbean", h: null },
+  { question: "Yellowstone was the world's first national park. If 7 geysers erupt 12 times a day, how many eruptions?",
+    options: ["72","77","84","91"], correct: 2, emoji: "🌋", category: "USA",
+    funFact: "Yellowstone sits on top of a supervolcano and has over 10,000 hot springs and geysers!",
+    lat: 44.4, lon: -110.6, mapLabel: "Yellowstone", h: ["840"] },
+
+  // ======== SOUTH AMERICA ========
+  { question: "South America has 12 countries. If each country has 5 unique animals, how many unique animals is that?",
+    options: ["50","55","60","65"], correct: 2, emoji: "🌎", category: "South America",
+    funFact: "South America is home to the Amazon Rainforest, which produces about 20% of the world's oxygen!",
+    lat: -8.8, lon: -55.5, mapLabel: "South America", h: null },
+  { question: "The Amazon Rainforest has 6 layers from ground to canopy. If a scientist finds 9 new insects in each layer, how many insects?",
+    options: ["45","48","54","56"], correct: 2, emoji: "🌳", category: "Brazil",
+    funFact: "The Amazon Rainforest is so big that it covers parts of 9 different countries!",
+    lat: -3.4, lon: -65, mapLabel: "Amazon", h: ["76"] },
+  { question: "Peru's famous Machu Picchu has about 200 stone buildings. If a guide shows 8 groups per day for 5 days, how many groups is that?",
+    options: ["35","40","45","48"], correct: 1, emoji: "🇵🇪", category: "Peru",
+    funFact: "Machu Picchu was built by the Inca people around 1450, high up in the Andes Mountains!",
+    lat: -13.2, lon: -72.5, mapLabel: "Machu Picchu", h: ["604"] },
+  { question: "Argentina is known for its 4 distinct seasons. If a farmer has 12 cows and splits them into 4 equal groups, how many per group?",
+    options: ["2","3","4","6"], correct: 1, emoji: "🇦🇷", category: "Argentina",
+    funFact: "Argentina is home to Patagonia, one of the most remote and beautiful places on Earth!",
+    lat: -38.4, lon: -63.6, mapLabel: "Argentina", h: ["32"] },
+  { question: "Chile is one of the longest countries in the world. If a bus travels 7 hours each day for 6 days, how many hours is that?",
+    options: ["36","42","48","54"], correct: 1, emoji: "🇨🇱", category: "Chile",
+    funFact: "Chile stretches over 4,300 km from north to south but is only about 175 km wide!",
+    lat: -35.7, lon: -71.5, mapLabel: "Chile", h: ["152"] },
+  { question: "Colombia is famous for coffee. If 72 bags of coffee are shared equally among 8 trucks, how many bags per truck?",
+    options: ["7","8","9","10"], correct: 2, emoji: "🇨🇴", category: "Colombia",
+    funFact: "Colombia is the third-largest coffee producer in the world and has two coastlines!",
+    lat: 4.6, lon: -74.3, mapLabel: "Colombia", h: ["170"] },
+  { question: "The Amazon River is 6,400 km long. If a boat travels 8 km per hour, how far does it go in 7 hours?",
+    options: ["48","54","56","63"], correct: 2, emoji: "🚣", category: "South America",
+    funFact: "The Amazon River carries more water than any other river in the world!",
+    lat: -3.1, lon: -60, mapLabel: "Amazon River", h: ["76"] },
+  { question: "Brazil won the FIFA World Cup 5 times. If each squad had 11 players on the field, how many players across all 5 wins?",
+    options: ["45","50","55","60"], correct: 2, emoji: "⚽", category: "Brazil",
+    funFact: "Brazil is the only country to have played in every FIFA World Cup tournament!",
+    lat: -14.2, lon: -51.9, mapLabel: "Brazil", h: ["76"] },
+  { question: "Venezuela has Angel Falls, the world's highest waterfall. If 108 tourists visit in 9 groups, how many per group?",
+    options: ["10","11","12","14"], correct: 2, emoji: "🏞️", category: "Venezuela",
+    funFact: "Angel Falls is 979 meters tall — that's about 15 times higher than Niagara Falls!",
+    lat: 5.9, lon: -62.5, mapLabel: "Angel Falls", h: ["862"] },
+  { question: "The Galápagos Islands have 13 main islands. If each has 8 unique animal species, how many species total?",
+    options: ["96","100","104","112"], correct: 2, emoji: "🐢", category: "Ecuador",
+    funFact: "Charles Darwin visited the Galápagos in 1835 and developed his theory of evolution there!",
+    lat: -0.9, lon: -89.6, mapLabel: "Galápagos", h: ["218"] },
+  { question: "Bolivia's Salar de Uyuni is the world's largest salt flat. If 132 square km are crossed in 11 hours, how many km per hour?",
+    options: ["10","11","12","14"], correct: 2, emoji: "🏜️", category: "Bolivia",
+    funFact: "Salar de Uyuni is so flat and reflective that it's used to calibrate satellites from space!",
+    lat: -20.1, lon: -67.6, mapLabel: "Bolivia", h: ["68"] },
+  { question: "The Andes is the longest mountain range, stretching through 7 countries. If each has 12 famous peaks, how many peaks?",
+    options: ["72","77","84","91"], correct: 2, emoji: "🏔️", category: "South America",
+    funFact: "The Andes stretch over 7,000 km along the west coast of South America!",
+    lat: -15, lon: -70, mapLabel: "Andes", h: null },
+  { question: "Ecuador is named after the Equator! If 6 tour buses each carry 8 passengers to the Equator line, how many visitors?",
+    options: ["42","46","48","54"], correct: 2, emoji: "🇪🇨", category: "Ecuador",
+    funFact: "In Ecuador, you can stand with one foot in the Northern Hemisphere and one in the Southern!",
+    lat: -1.8, lon: -78.2, mapLabel: "Ecuador", h: ["218"] },
+  { question: "Patagonia is shared by Argentina and Chile. If 96 penguins live in 8 colonies, how many per colony?",
+    options: ["10","11","12","14"], correct: 2, emoji: "🐧", category: "Patagonia",
+    funFact: "Patagonia is home to massive glaciers, including the famous Perito Moreno Glacier!",
+    lat: -50, lon: -70, mapLabel: "Patagonia", h: ["32","152"] },
+  { question: "Suriname's rainforest covers 93% of the country! If 11 research stations each have 7 scientists, how many scientists?",
+    options: ["66","70","77","84"], correct: 2, emoji: "🌿", category: "Suriname",
+    funFact: "Suriname is the smallest country in South America and one of the most forested countries on Earth!",
+    lat: 4, lon: -56, mapLabel: "Suriname", h: ["740"] },
+
+  // ======== OCEANIA ========
+  { question: "Australia has 6 states. If each state has 9 famous beaches, how many beaches is that?",
+    options: ["45","48","54","56"], correct: 2, emoji: "🇦🇺", category: "Australia",
+    funFact: "Australia is both a country and a continent! It has unique animals like kangaroos and platypuses.",
+    lat: -25.3, lon: 133.8, mapLabel: "Australia", h: ["36"] },
+  { question: "New Zealand has 2 main islands. If each island has 11 ski resorts, how many resorts total?",
+    options: ["18","20","22","24"], correct: 2, emoji: "🇳🇿", category: "New Zealand",
+    funFact: "New Zealand was the last major landmass to be settled by humans and was used to film The Lord of the Rings!",
+    lat: -40.9, lon: 174.9, mapLabel: "New Zealand", h: ["554"] },
+  { question: "The Great Barrier Reef has about 3,000 individual reefs. If a diver visits 6 reefs per day for 7 days, how many reefs?",
+    options: ["36","42","48","54"], correct: 1, emoji: "🐠", category: "Australia",
+    funFact: "The Great Barrier Reef is so large it can be seen from space! It's home to over 1,500 species of fish.",
+    lat: -18.3, lon: 147.7, mapLabel: "Barrier Reef", h: ["36"] },
+  { question: "Fiji is made up of 333 islands! If 9 friends each visit a different set of 4 islands, how many islands do they visit?",
+    options: ["27","32","36","40"], correct: 2, emoji: "🏝️", category: "Fiji",
+    funFact: "Fiji has some of the most beautiful coral reefs in the world!",
+    lat: -18, lon: 179, mapLabel: "Fiji", h: ["242"] },
+  { question: "Papua New Guinea has over 800 languages! If 96 languages are spoken in 8 provinces equally, how many per province?",
+    options: ["10","11","12","14"], correct: 2, emoji: "🇵🇬", category: "Papua New Guinea",
+    funFact: "Papua New Guinea has more languages than any other country — over 800! Many are spoken by just a few hundred people.",
+    lat: -6.3, lon: 147, mapLabel: "PNG", h: ["598"] },
+  { question: "The Sydney Opera House has 6 performance halls. If each hall hosts 12 shows per week, how many shows total?",
+    options: ["60","66","72","78"], correct: 2, emoji: "🎭", category: "Australia",
+    funFact: "The Sydney Opera House's roof is covered by over 1 million tiles that were made in Sweden!",
+    lat: -33.9, lon: 151.2, mapLabel: "Sydney", h: ["36"] },
+  { question: "Tonga has 169 islands grouped in 3 main clusters. If each cluster has 11 coral reefs, how many reefs?",
+    options: ["30","33","36","39"], correct: 1, emoji: "🏝️", category: "Tonga",
+    funFact: "Tonga is the only country in the Pacific that was never colonized by a European power!",
+    lat: -21.2, lon: -175.2, mapLabel: "Tonga", h: null },
+  { question: "Tasmania has 19 national parks. If a ranger checks 8 parks per day for 12 days, how many checks?",
+    options: ["84","90","96","108"], correct: 2, emoji: "🌲", category: "Australia",
+    funFact: "Tasmania is home to the Tasmanian devil, a fierce marsupial found nowhere else on Earth!",
+    lat: -42, lon: 146.3, mapLabel: "Tasmania", h: ["36"] },
+
+  // ======== OCEANS & POLES ========
+  { question: "There are 5 oceans on Earth. If a whale visits each ocean 8 times in a year, how many ocean visits is that?",
+    options: ["35","40","45","48"], correct: 1, emoji: "🐋", category: "Oceans",
+    funFact: "The five oceans are the Pacific, Atlantic, Indian, Southern, and Arctic. The Pacific is the largest!",
+    lat: 0, lon: -30, mapLabel: "Oceans", h: null },
+  { question: "Antarctica has 6 months of daylight in summer! If a penguin eats 7 fish each day for 6 days, how many fish?",
+    options: ["36","42","48","54"], correct: 1, emoji: "🐧", category: "Antarctica",
+    funFact: "Antarctica is the coldest continent. Temperatures can drop to -89 degrees Celsius!",
+    lat: -82, lon: 0, mapLabel: "Antarctica", h: ["10"] },
+  { question: "The Arctic has 8 countries around it. If each country sends 4 scientists to a research station, how many scientists?",
+    options: ["24","28","32","36"], correct: 2, emoji: "🧊", category: "Arctic",
+    funFact: "Unlike Antarctica, the Arctic is mostly frozen ocean. Polar bears live in the Arctic but NOT in Antarctica!",
+    lat: 82, lon: 0, mapLabel: "Arctic", h: null },
+  { question: "The Pacific Ocean has about 25,000 islands! If you group 5,000 islands into clusters of 5, how many clusters?",
+    options: ["100","500","1,000","5,000"], correct: 2, emoji: "🌊", category: "Pacific Ocean",
+    funFact: "The Pacific Ocean is larger than all the land on Earth combined!",
+    lat: 0, lon: -160, mapLabel: "Pacific Ocean", h: null },
+  { question: "The Mariana Trench is about 11 km deep. If a submarine dives 1 km every 3 hours, how many km in 9 hours?",
+    options: ["2","3","4","5"], correct: 1, emoji: "🌊", category: "Pacific Ocean",
+    funFact: "The Mariana Trench is the deepest place on Earth. If you put Mount Everest inside it, the peak would still be underwater!",
+    lat: 11.3, lon: 142.2, mapLabel: "Mariana Trench", h: null },
+  { question: "The Atlantic Ocean has 12 major shipping routes. If each route has 9 ports, how many ports total?",
+    options: ["96","99","108","112"], correct: 2, emoji: "🚢", category: "Atlantic Ocean",
+    funFact: "The Atlantic Ocean is the second largest ocean and is named after the Greek god Atlas!",
+    lat: 25, lon: -40, mapLabel: "Atlantic", h: null },
+  { question: "The Indian Ocean has 11 island nations. If each nation has 8 coral atolls, how many atolls total?",
+    options: ["77","84","88","96"], correct: 2, emoji: "🏝️", category: "Indian Ocean",
+    funFact: "The Indian Ocean is the warmest ocean in the world and is home to incredible marine life!",
+    lat: -10, lon: 70, mapLabel: "Indian Ocean", h: null },
+  { question: "Penguins in Antarctica form colonies of thousands. If 96 penguins huddle in 8 lines for warmth, how many per line?",
+    options: ["10","11","12","14"], correct: 2, emoji: "🐧", category: "Antarctica",
+    funFact: "Emperor penguins can survive temperatures of -60°C by huddling together for warmth!",
+    lat: -75, lon: 30, mapLabel: "Antarctica", h: ["10"] },
+
+  // ======== WORLD & MIXED ========
+  { question: "There are 7 continents on Earth. If you learn 9 facts about each continent, how many facts is that?",
+    options: ["56","63","72","81"], correct: 1, emoji: "🗺️", category: "World",
+    funFact: "The seven continents are Africa, Antarctica, Asia, Australia, Europe, North America, and South America!",
+    lat: 20, lon: 0, mapLabel: "World", h: null },
+  { question: "There are 54 countries in Africa and 44 in Europe. What is 54 minus 44?",
+    options: ["8","10","12","14"], correct: 1, emoji: "🗺️", category: "World",
+    funFact: "Africa has the most countries of any continent, while Australia has the fewest (just 1 country-continent)!",
+    lat: 30, lon: 15, mapLabel: "World", h: null },
+  { question: "The Equator passes through 13 countries. If each has 7 tropical forests, how many forests total?",
+    options: ["84","88","91","96"], correct: 2, emoji: "🌍", category: "World",
+    funFact: "Countries on the Equator have roughly 12 hours of daylight and 12 hours of darkness every day!",
+    lat: 0, lon: 25, mapLabel: "Equator", h: null },
+  { question: "Earth has 24 time zones. If you fly through 3 per flight, how many flights to cross all 24?",
+    options: ["6","7","8","9"], correct: 2, emoji: "✈️", category: "World",
+    funFact: "Time zones were invented in the 1800s because of railways — before that, every town set its own time!",
+    lat: 20, lon: 0, mapLabel: "World", h: null },
+  { question: "Earth has 14 peaks over 8,000 meters (eight-thousanders). If 7 mountaineers climb each one, how many climbs total?",
+    options: ["84","91","98","105"], correct: 2, emoji: "🏔️", category: "World",
+    funFact: "All 14 eight-thousanders are in Asia, in the Himalayas or the Karakoram range!",
+    lat: 30, lon: 80, mapLabel: "Himalayas", h: null },
+  { question: "The Silk Road connected China to Europe — about 6,400 km. If a caravan travels 8 km per hour for 12 hours, how far?",
+    options: ["84","90","96","108"], correct: 2, emoji: "🐪", category: "Silk Road",
+    funFact: "The Silk Road was a network of trade routes used for over 1,500 years!",
+    lat: 40, lon: 65, mapLabel: "Silk Road", h: null },
+  { question: "The Prime Meridian runs through 8 countries. If each country has 11 observatories, how many total?",
+    options: ["77","84","88","96"], correct: 2, emoji: "🌐", category: "World",
+    funFact: "The Prime Meridian passes through Greenwich, London, and divides the Eastern and Western Hemispheres!",
+    lat: 51.5, lon: 0, mapLabel: "Greenwich", h: ["826"] },
+  { question: "Coral reefs cover less than 1% of the ocean floor! If 11 reef systems each have 12 types of fish, how many types?",
+    options: ["120","128","132","140"], correct: 2, emoji: "🐠", category: "Oceans",
+    funFact: "Despite their tiny size, coral reefs support about 25% of all marine species!",
+    lat: -5, lon: 120, mapLabel: "Coral Triangle", h: null },
+  { question: "The Great Migration in Africa covers 800 km. If 108 wildebeest cross a river in 9 waves, how many per wave?",
+    options: ["10","11","12","14"], correct: 2, emoji: "🦬", category: "East Africa",
+    funFact: "About 1.5 million wildebeest make the Great Migration every year between Tanzania and Kenya!",
+    lat: -2, lon: 34.5, mapLabel: "Serengeti", h: ["834","404"] },
+  { question: "There are 11 major deserts on Earth. If each desert has 8 unique plant species, how many species total?",
+    options: ["77","84","88","96"], correct: 2, emoji: "🌵", category: "World",
+    funFact: "Not all deserts are hot! Antarctica is technically the largest desert because it gets so little precipitation.",
+    lat: 25, lon: 0, mapLabel: "World", h: null },
+  { question: "The Ring of Fire has 452 volcanoes around the Pacific. If 12 volcanoes are on each of 9 islands, how many is that?",
+    options: ["96","100","108","120"], correct: 2, emoji: "🌋", category: "Pacific",
+    funFact: "The Ring of Fire has 75% of the world's active volcanoes and 90% of its earthquakes!",
+    lat: 10, lon: 140, mapLabel: "Ring of Fire", h: null },
+  { question: "Rainforests are found on 6 continents. If each continent has 12 endangered species unique to its rainforests, how many total?",
+    options: ["60","66","72","78"], correct: 2, emoji: "🌿", category: "World",
+    funFact: "Rainforests once covered 14% of the Earth's land. Now they cover only 6% but hold half of all species!",
+    lat: -5, lon: -55, mapLabel: "Rainforests", h: null },
+];
+
+// ==================== BONUS ROUND DATA ====================
+// Each entry matches the question at the same index — tests fun fact recall
+const bonusData = [
+  {q:"What is the world's largest desert?",a:"The Sahara",w:["The Gobi","The Kalahari","The Atacama"]},
+  {q:"How long was the Great Pyramid the tallest building in the world?",a:"Over 3,800 years",w:["Over 1,800 years","Over 500 years","Over 2,500 years"]},
+  {q:"About how long is the Nile River?",a:"6,650 km",w:["4,650 km","8,650 km","3,650 km"]},
+  {q:"Where are lemurs found in the wild?",a:"Only in Madagascar",w:["All across Africa","Southeast Asia","South America"]},
+  {q:"What type of mountain is Kilimanjaro?",a:"A dormant volcano",w:["An active volcano","A regular mountain","A coral formation"]},
+  {q:"How many capital cities does South Africa have?",a:"Three",w:["One","Two","Four"]},
+  {q:"Lake Victoria is the source of which river?",a:"The White Nile",w:["The Congo","The Zambezi","The Niger"]},
+  {q:"About how many people live in Nigeria?",a:"Over 200 million",w:["Over 50 million","Over 500 million","Over 100 million"]},
+  {q:"When did Ghana gain independence?",a:"1957",w:["1967","1945","1980"]},
+  {q:"How many months does Ethiopia's calendar have?",a:"13",w:["12","14","10"]},
+  {q:"About how many animals migrate through the Serengeti yearly?",a:"Over 2 million",w:["Over 200,000","Over 10 million","Over 500,000"]},
+  {q:"What ancient ruins are found in Tunisia?",a:"Roman ruins",w:["Greek temples","Egyptian pyramids","Mayan temples"]},
+  {q:"About how many mountain gorillas remain in the wild?",a:"About 1,000",w:["About 10,000","About 100","About 50,000"]},
+  {q:"What's surprising about the Sahara's terrain?",a:"Much of it is rocky, not sand",w:["It's entirely sand dunes","It has many rivers","It's mostly gravel"]},
+  {q:"Which animals are Africa's Big Five?",a:"Lion, elephant, buffalo, leopard, rhino",w:["Lion, giraffe, zebra, hippo, elephant","Cheetah, gorilla, rhino, giraffe, elephant","Lion, tiger, bear, wolf, eagle"]},
+  {q:"What is the oldest university in the world?",a:"University of al-Qarawiyyin in Morocco",w:["University of Oxford","University of Bologna","Harvard University"]},
+  {q:"What makes the Okavango Delta special?",a:"It's one of the few large inland deltas",w:["It's the deepest lake in Africa","It's the largest desert","It has the tallest waterfall"]},
+  {q:"About how many temples does Japan have?",a:"Over 80,000",w:["Over 8,000","Over 800","Over 1,000"]},
+  {q:"India's population is over how many?",a:"1.4 billion",w:["500 million","2 billion","800 million"]},
+  {q:"How long is the Great Wall of China?",a:"Over 21,000 km",w:["Over 5,000 km","Over 10,000 km","Over 50,000 km"]},
+  {q:"How many people live in Asia?",a:"Over 4.5 billion",w:["Over 2 billion","Over 1 billion","Over 6 billion"]},
+  {q:"How many islands does Thailand have?",a:"Over 1,500",w:["Over 150","Over 500","Over 5,000"]},
+  {q:"What does Mongolia have more of than people?",a:"Horses",w:["Camels","Sheep","Yaks"]},
+  {q:"What unique animal is Indonesia home to?",a:"Komodo dragons",w:["Giant pandas","Polar bears","Kangaroos"]},
+  {q:"What is Angkor Wat?",a:"The largest religious monument in the world",w:["The tallest building in Asia","The oldest city in the world","The longest bridge in Asia"]},
+  {q:"The Yangtze is the longest river on which continent?",a:"Asia",w:["Africa","Europe","South America"]},
+  {q:"What is Sri Lanka known as?",a:"The Pearl of the Indian Ocean",w:["The Jewel of Asia","The Star of the East","The Heart of India"]},
+  {q:"What is South Korea famous for?",a:"K-pop music",w:["Sushi","Tango dancing","Bollywood"]},
+  {q:"What's special about Vietnam's Son Doong cave?",a:"It has its own weather system",w:["It's made of crystal","It glows in the dark","It's completely underwater"]},
+  {q:"How tall is Mount Everest?",a:"8,849 meters",w:["6,849 meters","10,849 meters","7,849 meters"]},
+  {q:"The Philippines is part of what important marine region?",a:"The Coral Triangle",w:["The Bermuda Triangle","The Pacific Ring","The Golden Arc"]},
+  {q:"How long is the Trans-Siberian Railway?",a:"9,289 km",w:["5,289 km","3,289 km","15,289 km"]},
+  {q:"How was the ancient city of Petra built?",a:"Carved into rose-red cliff faces",w:["Built from marble blocks","Constructed from wood","Made from volcanic rock"]},
+  {q:"What kind of camels live in the Gobi Desert?",a:"Bactrian (two-humped)",w:["Dromedary (one-humped)","Arabian","Wild miniature camels"]},
+  {q:"Japan sits on which famous geological zone?",a:"The Ring of Fire",w:["The Earthquake Belt","The Tectonic Line","The Volcanic Arc"]},
+  {q:"What makes Istanbul unique among cities?",a:"It sits on two continents",w:["It's the oldest city in the world","It's the largest city in Europe","It has the most mosques"]},
+  {q:"How tall is the Eiffel Tower?",a:"330 meters",w:["230 meters","530 meters","130 meters"]},
+  {q:"What record does Italy hold for UNESCO sites?",a:"More than any other country",w:["Second most in Europe","Third most in the world","Most in Southern Europe"]},
+  {q:"What did the ancient Greeks invent?",a:"The Olympic Games",w:["The compass","Paper","The printing press"]},
+  {q:"What's surprising about Iceland's landscape?",a:"Despite its name, it's actually very green",w:["It has no volcanoes","It never gets cold","It's the largest island in Europe"]},
+  {q:"What is Spain a top producer of?",a:"Olive oil",w:["Coffee","Rice","Maple syrup"]},
+  {q:"About how many castles does the UK have?",a:"Over 1,500",w:["Over 500","Over 5,000","Over 150"]},
+  {q:"How were Norway's fjords formed?",a:"Carved by glaciers",w:["Made by earthquakes","Created by rivers","Formed by volcanoes"]},
+  {q:"What roams in Poland's Bialowieza Forest?",a:"Wild bison",w:["Polar bears","Wild tigers","Giant pandas"]},
+  {q:"What is the Alps' distinction in Europe?",a:"Highest and most extensive mountain range",w:["Oldest mountain range","Longest mountain range","Most volcanic range"]},
+  {q:"How many lakes does Finland actually have?",a:"188,000",w:["1,000","18,000","1,880,000"]},
+  {q:"How much of the Netherlands is below sea level?",a:"About one-third",w:["About half","About one-tenth","Almost all of it"]},
+  {q:"How much chocolate does Belgium produce per year?",a:"Over 220,000 tons",w:["Over 22,000 tons","Over 2,200 tons","Over 2 million tons"]},
+  {q:"What creature is said to live in Loch Ness?",a:"Nessie (the Loch Ness Monster)",w:["Bigfoot","The Kraken","The Yeti"]},
+  {q:"What legend is Romania's Transylvania famous for?",a:"Count Dracula",w:["Robin Hood","King Arthur","The Phantom of the Opera"]},
+  {q:"What is the oldest amusement park in the world?",a:"Bakken in Denmark",w:["Disneyland in the USA","Tivoli in Denmark","Luna Park in Australia"]},
+  {q:"What could the ancient Colosseum be flooded for?",a:"Mock sea battles",w:["Swimming competitions","Fish farming","Water shows"]},
+  {q:"How many official languages does Switzerland have?",a:"4",w:["2","3","6"]},
+  {q:"What is the world's largest folk festival?",a:"Oktoberfest in Germany",w:["Carnival in Brazil","Mardi Gras in the USA","Holi in India"]},
+  {q:"How big is Russia?",a:"Over 17 million square km",w:["Over 7 million sq km","Over 27 million sq km","Over 12 million sq km"]},
+  {q:"Portuguese explorers were the first Europeans to reach where?",a:"Japan",w:["China","Australia","America"]},
+  {q:"What's surprising about sheep in Ireland?",a:"There are more sheep than people",w:["No sheep live there","All sheep are black","Sheep outnumber cows 100 to 1"]},
+  {q:"How many time zones does the USA span?",a:"6",w:["4","3","8"]},
+  {q:"What makes Canada special regarding lakes?",a:"More lakes than all other countries combined",w:["The deepest lake in the world","The largest lake in the world","No natural lakes at all"]},
+  {q:"Who invented chocolate?",a:"The ancient Aztecs of Mexico",w:["The Swiss","The Belgians","The French"]},
+  {q:"What carved the Grand Canyon?",a:"The Colorado River",w:["Glaciers","Earthquakes","Volcanic eruptions"]},
+  {q:"Central America is home to some of the most colorful what?",a:"Butterflies and birds",w:["Fish and coral","Snakes and lizards","Flowers and trees"]},
+  {q:"What does 'Costa Rica' mean in Spanish?",a:"Rich Coast",w:["Beautiful Coast","Green Coast","Happy Coast"]},
+  {q:"What does Alaska have more of than all other US states?",a:"Coastline",w:["Mountains","Lakes","Rivers"]},
+  {q:"How far is Hawaii from the nearest continent?",a:"Over 3,800 km",w:["Over 800 km","Over 1,800 km","Over 6,800 km"]},
+  {q:"How many US states does the Mississippi River drain?",a:"31",w:["15","21","41"]},
+  {q:"What music genre was born in Jamaica?",a:"Reggae",w:["Jazz","Blues","Salsa"]},
+  {q:"How much distance does the Panama Canal save ships?",a:"12,500 km",w:["2,500 km","5,500 km","25,000 km"]},
+  {q:"How did the Statue of Liberty arrive in America?",a:"In 214 wooden crates",w:["In one piece on a ship","By helicopter","Assembled on-site from scratch"]},
+  {q:"How thick is Greenland's ice sheet?",a:"Up to 3 km",w:["Up to 300 meters","Up to 30 km","Up to 10 km"]},
+  {q:"What is the smallest bird in the world?",a:"The bee hummingbird from Cuba",w:["The house sparrow","The wren","The goldfinch"]},
+  {q:"What color is the Caribbean Sea known for?",a:"Turquoise",w:["Deep blue","Emerald green","Crystal white"]},
+  {q:"What does Yellowstone sit on top of?",a:"A supervolcano",w:["A glacier","An underground lake","A gold mine"]},
+  {q:"How much of the world's oxygen does the Amazon produce?",a:"About 20%",w:["About 5%","About 50%","About 10%"]},
+  {q:"How many countries does the Amazon Rainforest cover?",a:"9",w:["3","5","12"]},
+  {q:"Who built Machu Picchu?",a:"The Inca people",w:["The Aztecs","The Maya","The Spanish"]},
+  {q:"What famous region is in Argentina?",a:"Patagonia",w:["The Outback","The Sahel","The Steppe"]},
+  {q:"How wide is Chile on average?",a:"About 175 km",w:["About 500 km","About 1,000 km","About 50 km"]},
+  {q:"What's special about Colombia's coastlines?",a:"It has two coastlines",w:["It has no coastline","It has the longest coastline","It has three coastlines"]},
+  {q:"What record does the Amazon River hold?",a:"Carries the most water of any river",w:["Longest river in the world","Deepest river in the world","Oldest river in the world"]},
+  {q:"What FIFA World Cup record does Brazil hold?",a:"Played in every tournament",w:["Won every tournament","Hosted the most","Scored the most goals ever"]},
+  {q:"How much taller is Angel Falls than Niagara Falls?",a:"About 15 times taller",w:["About 3 times","About 5 times","About 50 times"]},
+  {q:"Who visited the Galápagos and developed the theory of evolution?",a:"Charles Darwin",w:["Albert Einstein","Isaac Newton","Alexander Humboldt"]},
+  {q:"What is Bolivia's Salar de Uyuni used for from space?",a:"Calibrating satellites",w:["Measuring wind","Tracking storms","Testing telescopes"]},
+  {q:"How long are the Andes?",a:"Over 7,000 km",w:["Over 3,000 km","Over 5,000 km","Over 10,000 km"]},
+  {q:"What can you do at the Equator line in Ecuador?",a:"Stand in both hemispheres at once",w:["See the Northern Lights","Touch both oceans","See the midnight sun"]},
+  {q:"What famous glacier is in Patagonia?",a:"The Perito Moreno Glacier",w:["The Mendenhall Glacier","The Vatnajökull Glacier","The Fox Glacier"]},
+  {q:"What percentage of Suriname is covered by rainforest?",a:"93%",w:["53%","73%","43%"]},
+  {q:"What unique animals live in Australia?",a:"Kangaroos and platypuses",w:["Pandas and tigers","Lions and elephants","Bears and wolves"]},
+  {q:"What famous movies were filmed in New Zealand?",a:"The Lord of the Rings",w:["Harry Potter","Star Wars","Indiana Jones"]},
+  {q:"How many fish species live in the Great Barrier Reef?",a:"Over 1,500",w:["Over 500","Over 150","Over 5,000"]},
+  {q:"What does Fiji have some of the most beautiful of in the world?",a:"Coral reefs",w:["Mountain peaks","Desert dunes","River canyons"]},
+  {q:"How many languages does Papua New Guinea have?",a:"Over 800",w:["Over 80","Over 200","Over 8,000"]},
+  {q:"Where were the Sydney Opera House roof tiles made?",a:"Sweden",w:["Australia","Japan","Italy"]},
+  {q:"What's special about Tonga's colonial history?",a:"Never colonized by a European power",w:["Colonized by three countries","First to be colonized","Colonized for only 1 year"]},
+  {q:"What unique animal lives only in Tasmania?",a:"The Tasmanian devil",w:["The koala","The wallaby","The wombat"]},
+  {q:"Which is the largest ocean on Earth?",a:"The Pacific",w:["The Atlantic","The Indian","The Arctic"]},
+  {q:"How cold can Antarctica get?",a:"-89 degrees Celsius",w:["-40 degrees Celsius","-120 degrees Celsius","-60 degrees Celsius"]},
+  {q:"What lives in the Arctic but NOT in Antarctica?",a:"Polar bears",w:["Penguins","Seals","Whales"]},
+  {q:"How does the Pacific Ocean compare to all land on Earth?",a:"It's larger than all land combined",w:["It's about the same size","It's half the size","It's slightly smaller"]},
+  {q:"If Mount Everest were placed in the Mariana Trench, what would happen?",a:"The peak would still be underwater",w:["It would stick out by 1 km","It would be at sea level","It would be twice as deep"]},
+  {q:"The Atlantic Ocean is named after which Greek god?",a:"Atlas",w:["Poseidon","Zeus","Hermes"]},
+  {q:"What record does the Indian Ocean hold?",a:"Warmest ocean in the world",w:["Deepest ocean","Largest ocean","Most islands"]},
+  {q:"How do Emperor penguins survive extreme cold?",a:"By huddling together for warmth",w:["By digging burrows","By swimming in warm water","By migrating north"]},
+  {q:"Which is the only country that is also a continent?",a:"Australia",w:["Antarctica","Africa","Europe"]},
+  {q:"Which continent has the most countries?",a:"Africa",w:["Europe","Asia","South America"]},
+  {q:"How much daylight do countries on the Equator get daily?",a:"About 12 hours",w:["About 8 hours","About 16 hours","About 10 hours"]},
+  {q:"Why were time zones invented?",a:"Because of railways",w:["Because of telephones","Because of airplanes","Because of computers"]},
+  {q:"Where are all 14 eight-thousander mountains located?",a:"Asia",w:["South America","Europe","North America"]},
+  {q:"How long was the Silk Road used for trade?",a:"Over 1,500 years",w:["Over 500 years","Over 100 years","Over 5,000 years"]},
+  {q:"The Prime Meridian passes through which famous location?",a:"Greenwich, London",w:["Paris, France","New York, USA","Tokyo, Japan"]},
+  {q:"How much of all marine species do coral reefs support?",a:"About 25%",w:["About 5%","About 50%","About 75%"]},
+  {q:"How many wildebeest make the Great Migration each year?",a:"About 1.5 million",w:["About 150,000","About 5 million","About 500,000"]},
+  {q:"Which is technically the largest desert on Earth?",a:"Antarctica",w:["The Sahara","The Gobi","The Arctic"]},
+  {q:"What percentage of the world's active volcanoes are in the Ring of Fire?",a:"75%",w:["25%","50%","90%"]},
+  {q:"How much of Earth's land do rainforests now cover?",a:"6%",w:["14%","20%","2%"]},
+];
+
+// ==================== MAP SETUP ====================
+const MAP_W = 960, MAP_H = 500;
+const projection = d3.geoNaturalEarth1().scale(MAP_W / 5.6).translate([MAP_W / 2, MAP_H / 2]);
+const pathGen = d3.geoPath().projection(projection);
+let mapReady = false;
+
+async function initMap() {
+  const svg = d3.select("#mini-map")
+    .attr("viewBox", `0 0 ${MAP_W} ${MAP_H}`)
+    .attr("preserveAspectRatio", "xMidYMid meet");
+
+  // Ocean background
+  svg.append("rect").attr("width", MAP_W).attr("height", MAP_H).attr("class", "ocean-bg");
+
+  // Graticule (lat/lon grid)
+  const graticule = d3.geoGraticule().step([30, 30]);
+  svg.append("path").datum(graticule()).attr("d", pathGen).attr("class", "map-graticule");
+
+  try {
+    const world = await d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
+    const countries = topojson.feature(world, world.objects.countries);
+
+    svg.selectAll("path.country")
+      .data(countries.features)
+      .join("path")
+      .attr("class", "country-default")
+      .attr("d", pathGen);
+
+    // Pin elements (on top of countries)
+    svg.append("circle").attr("id", "map-ping").attr("class", "map-pin-ring")
+      .attr("cx", MAP_W/2).attr("cy", MAP_H/2).attr("r", 4)
+      .attr("fill", "none").attr("stroke", "#ffd166").attr("stroke-width", 2);
+    svg.append("circle").attr("id", "map-dot")
+      .attr("cx", MAP_W/2).attr("cy", MAP_H/2).attr("r", 5)
+      .attr("fill", "#ffd166").attr("stroke", "#fff").attr("stroke-width", 1.5);
+
+    // Label
+    const labelG = svg.append("g").attr("id", "map-label").attr("class", "map-label-bg");
+    labelG.append("rect").attr("id", "label-rect").attr("rx", 5).attr("ry", 5).attr("height", 20).attr("fill", "rgba(0,0,0,0.65)");
+    labelG.append("text").attr("id", "label-text").attr("fill", "white").attr("font-size", 12)
+      .attr("font-weight", "bold").attr("font-family", "Nunito, sans-serif").attr("dy", "0.35em");
+
+    mapReady = true;
+  } catch (e) {
+    console.warn("Map data failed to load:", e);
+  }
+}
+
+function renderMiniMap(lat, lon, label, highlightIds) {
+  if (!mapReady) return;
+  const svg = d3.select("#mini-map");
+  const [px, py] = projection([lon, lat]);
+
+  // Reset & highlight countries
+  svg.selectAll("path.country-default, path.country-highlight")
+    .attr("class", "country-default");
+
+  if (highlightIds && highlightIds.length) {
+    svg.selectAll("path.country-default")
+      .filter(d => highlightIds.includes(d.id))
+      .attr("class", "country-highlight");
+  }
+
+  // Pin position
+  svg.select("#map-dot").attr("cx", px).attr("cy", py);
+  const ping = svg.select("#map-ping").attr("cx", px).attr("cy", py);
+  // restart animation
+  ping.node().style.animation = "none";
+  ping.node().offsetHeight;
+  ping.node().style.animation = "";
+
+  // Label
+  const labelG = svg.select("#map-label");
+  const textEl = svg.select("#label-text").text(label);
+  const textW = Math.max(textEl.node().getComputedTextLength(), 30) + 10;
+  const rectEl = svg.select("#label-rect").attr("width", textW);
+
+  // Position label — flip left if near right edge, flip up if near bottom
+  let lx = px + 12, ly = py - 10;
+  if (px > MAP_W - 120) { lx = px - textW - 12; }
+  if (py > MAP_H - 40) { ly = py - 28; }
+
+  rectEl.attr("x", lx).attr("y", ly);
+  textEl.attr("x", lx + 5).attr("y", ly + 10);
+}
+
+// ==================== GAME STATE ====================
+let state = { currentQuestions: [], questionIndex: 0, score: 0, streak: 0, bestStreak: 0, correctCount: 0, answered: false, bonusDone1: false, bonusDone2: false, inBonus: false, exitingBonus: false };
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+function startGame() {
+  state = { currentQuestions: shuffle(questions).slice(0, 10), questionIndex: 0, score: 0, streak: 0, bestStreak: 0, correctCount: 0, answered: false, bonusDone1: false, bonusDone2: false, inBonus: false, exitingBonus: false };
+  document.getElementById('game-screen').classList.remove('bonus-active');
+  showScreen('game-screen');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = state.currentQuestions[state.questionIndex];
+  state.answered = false;
+  document.getElementById('progress-text').textContent = `Q ${state.questionIndex + 1}/10`;
+  document.getElementById('score-display').textContent = `Score: ${state.score}`;
+  document.getElementById('progress-fill').style.width = `${(state.questionIndex / 10) * 100}%`;
+  updateStreakDisplay();
+  document.getElementById('q-emoji').textContent = q.emoji;
+  document.getElementById('q-category').textContent = q.category;
+  document.getElementById('q-text').textContent = q.question;
+  renderMiniMap(q.lat, q.lon, q.mapLabel, q.h);
+
+  const optClasses = ['opt-a','opt-b','opt-c','opt-d'];
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = `option-btn ${optClasses[i]}`;
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(i);
+    grid.appendChild(btn);
+  });
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('feedback').style.display = 'none';
+}
+
+function selectAnswer(index) {
+  if (state.answered) return;
+  state.answered = true;
+  const q = state.currentQuestions[state.questionIndex];
+  const isCorrect = index === q.correct;
+  const buttons = document.querySelectorAll('.option-btn');
+  buttons.forEach((btn, i) => {
+    btn.classList.add('disabled');
+    if (i === q.correct) btn.classList.add('correct');
+    if (i === index && !isCorrect) btn.classList.add('wrong');
+  });
+  let pointsEarned = 0, streakBonus = 0;
+  if (isCorrect) {
+    state.correctCount++; state.streak++;
+    if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+    pointsEarned = 10;
+    if (state.streak >= 3) { streakBonus = 5; pointsEarned += streakBonus; }
+    state.score += pointsEarned;
+    showFloatingScore(pointsEarned);
+    if (state.streak >= 3) spawnConfetti(15);
+  } else { state.streak = 0; }
+  document.getElementById('score-display').textContent = `Score: ${state.score}`;
+  updateStreakDisplay();
+  const feedback = document.getElementById('feedback');
+  feedback.style.display = 'block';
+  feedback.className = `feedback show ${isCorrect ? 'correct-feedback' : 'wrong-feedback'}`;
+  const header = document.getElementById('feedback-header');
+  const pointsDiv = document.getElementById('feedback-points');
+  if (isCorrect) {
+    header.textContent = ['Correct!','Awesome!','Nailed it!','You got it!','Brilliant!'][Math.floor(Math.random() * 5)];
+    let pText = `+${pointsEarned} points`;
+    if (streakBonus > 0) pText += ` (includes +${streakBonus} streak bonus!)`;
+    pointsDiv.innerHTML = `<span class="points">${pText}</span>`;
+  } else {
+    header.textContent = ['Not quite!','Almost!','Good try!'][Math.floor(Math.random() * 3)];
+    pointsDiv.innerHTML = `<span style="color:#888;">The answer was: <strong>${q.options[q.correct]}</strong></span>`;
+  }
+  document.getElementById('fun-fact').innerHTML = `<strong>Fun Fact:</strong> ${q.funFact}`;
+  document.getElementById('btn-next').textContent = state.questionIndex === 9 ? 'See Results!' : 'Next Question';
+}
+
+function nextQuestion() {
+  // If exiting bonus, go back to normal flow
+  if (state.exitingBonus) {
+    state.exitingBonus = false;
+    state.inBonus = false;
+    document.getElementById('game-screen').classList.remove('bonus-active');
+    // If we were at Q10 bonus, go to results
+    if (state.questionIndex >= 10) { showResults(); return; }
+    renderQuestion();
+    return;
+  }
+
+  state.questionIndex++;
+
+  // Check for bonus round triggers: after Q5 and after Q10
+  if (state.questionIndex === 5 && !state.bonusDone1) {
+    state.bonusDone1 = true;
+    showBonusRound(0, 5);
+    return;
+  }
+  if (state.questionIndex >= 10 && !state.bonusDone2) {
+    state.bonusDone2 = true;
+    showBonusRound(5, 10);
+    return;
+  }
+
+  if (state.questionIndex >= 10) showResults();
+  else renderQuestion();
+}
+
+function showBonusRound(fromIdx, toIdx) {
+  state.inBonus = true;
+  document.getElementById('game-screen').classList.add('bonus-active');
+
+  // Pick a random question from the range that has bonus data
+  const candidates = [];
+  for (let i = fromIdx; i < toIdx && i < state.currentQuestions.length; i++) {
+    const origIdx = questions.indexOf(state.currentQuestions[i]);
+    if (origIdx >= 0 && bonusData[origIdx]) {
+      candidates.push({ questionObj: state.currentQuestions[i], bonusIdx: origIdx, roundIdx: i });
+    }
+  }
+
+  // Fallback: if no bonus data found, skip bonus
+  if (candidates.length === 0) {
+    state.exitingBonus = true;
+    nextQuestion();
+    return;
+  }
+
+  const pick = candidates[Math.floor(Math.random() * candidates.length)];
+  const bd = bonusData[pick.bonusIdx];
+  const origQ = pick.questionObj;
+
+  // Show the original question's location on the map
+  renderMiniMap(origQ.lat, origQ.lon, origQ.mapLabel, origQ.h);
+
+  // Build shuffled options
+  const allOpts = [bd.a, ...bd.w];
+  const correctAnswer = bd.a;
+  const shuffled = shuffle(allOpts);
+  const correctIdx = shuffled.indexOf(correctAnswer);
+
+  // Update UI
+  document.getElementById('progress-text').textContent = 'BONUS';
+  document.getElementById('q-text').textContent = bd.q;
+
+  const optClasses = ['opt-a','opt-b','opt-c','opt-d'];
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+  shuffled.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = `option-btn ${optClasses[i]}`;
+    btn.textContent = opt;
+    btn.onclick = () => handleBonusAnswer(i, correctIdx, origQ.funFact);
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('feedback').style.display = 'none';
+  state.answered = false;
+}
+
+function handleBonusAnswer(selected, correctIdx, funFact) {
+  if (state.answered) return;
+  state.answered = true;
+  state.exitingBonus = true;
+
+  const isCorrect = selected === correctIdx;
+  const buttons = document.querySelectorAll('.option-btn');
+  buttons.forEach((btn, i) => {
+    btn.classList.add('disabled');
+    if (i === correctIdx) btn.classList.add('correct');
+    if (i === selected && !isCorrect) btn.classList.add('wrong');
+  });
+
+  let bonusPoints = 0;
+  if (isCorrect) {
+    bonusPoints = 20;
+    state.score += bonusPoints;
+    showFloatingScore(bonusPoints);
+    spawnConfetti(20);
+  }
+
+  document.getElementById('score-display').textContent = `Score: ${state.score}`;
+
+  const feedback = document.getElementById('feedback');
+  feedback.style.display = 'block';
+  feedback.className = `feedback show ${isCorrect ? 'correct-feedback' : 'wrong-feedback'}`;
+
+  const header = document.getElementById('feedback-header');
+  const pointsDiv = document.getElementById('feedback-points');
+  if (isCorrect) {
+    header.textContent = ['Bonus Nailed!','Great Memory!','You Were Paying Attention!'][Math.floor(Math.random() * 3)];
+    pointsDiv.innerHTML = `<span class="points">+${bonusPoints} bonus points!</span>`;
+  } else {
+    header.textContent = 'Read Those Fun Facts!';
+    pointsDiv.innerHTML = '<span style="color:#888;">No bonus points this time — read the fun facts!</span>';
+  }
+
+  document.getElementById('fun-fact').innerHTML = `<strong>The Fun Fact Was:</strong> ${funFact}`;
+  document.getElementById('btn-next').textContent = state.questionIndex >= 10 ? 'See Results!' : 'Next Question';
+}
+
+function showResults() {
+  showScreen('results-screen');
+  spawnConfetti(40);
+  document.getElementById('results-score').textContent = state.score;
+  document.getElementById('stat-correct').textContent = `${state.correctCount}/10`;
+  document.getElementById('stat-streak').textContent = state.bestStreak;
+  let stars = 0;
+  if (state.score >= 30) stars = 1;
+  if (state.score >= 60) stars = 2;
+  if (state.score >= 90) stars = 3;
+  if (state.score >= 110) stars = 4;
+  if (state.correctCount === 10) stars = 5;
+  const sc = document.getElementById('stars-display'); sc.innerHTML = '';
+  for (let i = 0; i < stars; i++) sc.innerHTML += `<span class="star">⭐</span>`;
+  for (let i = stars; i < 5; i++) sc.innerHTML += `<span class="star" style="animation-delay:${0.2+i*0.2}s;filter:grayscale(1) opacity(0.3);">⭐</span>`;
+  const titles = [
+    { min: 0, title: 'Explorer', emoji: '🗺️' }, { min: 30, title: 'Adventurer', emoji: '🧭' },
+    { min: 60, title: 'Navigator', emoji: '🌟' }, { min: 90, title: 'Geography Whiz', emoji: '🏅' },
+    { min: 110, title: 'GeoMath Champion', emoji: '🏆' },
+  ];
+  let earned = titles[0];
+  for (const t of titles) { if (state.score >= t.min) earned = t; }
+  if (state.correctCount === 10) earned = { title: 'Perfect Score Legend', emoji: '👑' };
+  document.getElementById('results-title').textContent = `${earned.emoji} ${earned.title} ${earned.emoji}`;
+  const best = localStorage.getItem('geomath-best') || 0;
+  const newBestEl = document.getElementById('new-best');
+  if (state.score > best) { localStorage.setItem('geomath-best', state.score); newBestEl.innerHTML = '<div class="new-best">New Best Score!</div>'; }
+  else { newBestEl.innerHTML = ''; }
+}
+
+// ==================== UI HELPERS ====================
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+
+function updateStreakDisplay() {
+  const el = document.getElementById('streak-display');
+  if (state.streak >= 2) { el.textContent = `🔥 ${state.streak}`; el.style.animation = 'none'; el.offsetHeight; el.style.animation = 'correctPop 0.3s ease'; }
+  else { el.textContent = ''; }
+}
+
+function showFloatingScore(pts) {
+  const float = document.createElement('div'); float.className = 'score-float'; float.textContent = `+${pts}`;
+  const scoreEl = document.getElementById('score-display');
+  const rect = scoreEl.getBoundingClientRect(); const appRect = document.getElementById('app').getBoundingClientRect();
+  float.style.left = `${rect.left - appRect.left + rect.width / 2}px`; float.style.top = `${rect.top - appRect.top}px`;
+  document.getElementById('app').appendChild(float); setTimeout(() => float.remove(), 1000);
+}
+
+function spawnConfetti(count) {
+  const container = document.getElementById('confetti-container');
+  const colors = ['#4361ee','#7209b7','#06d6a0','#ef476f','#ffd166','#f77f00','#00b4d8'];
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div'); p.className = 'confetti-piece';
+    p.style.left = `${Math.random()*100}%`; p.style.top = `${-10+Math.random()*40}%`;
+    p.style.backgroundColor = colors[Math.floor(Math.random()*colors.length)];
+    p.style.width = `${6+Math.random()*8}px`; p.style.height = `${6+Math.random()*8}px`;
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    p.style.animationDuration = `${1+Math.random()*1.5}s`; p.style.animationDelay = `${Math.random()*0.5}s`;
+    container.appendChild(p); setTimeout(() => p.remove(), 3000);
+  }
+}
+
+// ==================== INIT ====================
+(function init() {
+  const best = localStorage.getItem('geomath-best');
+  if (best && parseInt(best) > 0) document.getElementById('best-score').textContent = `Best Score: ${best}`;
+  initMap();
+})();
+</script>
+</body>
+</html>
