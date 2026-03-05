@@ -2001,7 +2001,7 @@ async function loadWallOfFameInto(containerId) {
   const container = document.getElementById(containerId);
   container.innerHTML = '<div class="wof-loading">Loading signatures...</div>';
   try {
-    const res = await fetch(`${FIREBASE_URL}/guestbook.json?orderBy="ts"&limitToLast=50`);
+    const res = await fetch(`${FIREBASE_URL}/guestbook.json`);
     const data = await res.json();
     renderWofEntries(container, data, 'No signatures yet — play and be the first! 🌟');
   } catch (err) {
@@ -2013,7 +2013,7 @@ async function loadWallOfFame() {
   const container = document.getElementById('wof-entries');
   container.innerHTML = '<div class="wof-loading">Loading signatures...</div>';
   try {
-    const res = await fetch(`${FIREBASE_URL}/guestbook.json?orderBy="ts"&limitToLast=50`);
+    const res = await fetch(`${FIREBASE_URL}/guestbook.json`);
     const data = await res.json();
     renderWofEntries(container, data, 'No signatures yet — be the first! 🌟');
   } catch (err) {
@@ -2080,15 +2080,16 @@ const EMAILJS_KEY = 'n1kD8C30-3_VKqKmS';
 
 function notifyNewSignature(entry) {
   const levelNames = { 1: 'Junior Explorer 🌱', 2: 'Math Trickster 🧠', 3: 'Geo Master ⭐' };
-  try {
-    emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
-      name: entry.name,
-      message: entry.msg || '(no message)',
-      level: levelNames[entry.level] || 'Level ' + entry.level,
-      score: entry.score,
-      time: new Date().toLocaleString()
-    });
-  } catch (e) { /* silent — email is best-effort */ }
+  emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+    name: entry.name,
+    message: entry.msg || '(no message)',
+    level: levelNames[entry.level] || 'Level ' + entry.level,
+    score: String(entry.score),
+    time: new Date().toLocaleString()
+  }).then(
+    () => console.log('📧 Email notification sent'),
+    (err) => console.warn('📧 Email failed:', err)
+  );
 }
 
 // ==================== INIT ====================
