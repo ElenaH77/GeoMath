@@ -389,7 +389,7 @@
         <span class="level-icon">⭐</span>
         <div class="level-info">
           <div class="level-name">Geo Master</div>
-          <div class="level-desc">Type your answers · No multiple choice!</div>
+          <div class="level-desc">Type your answers · Mental math tricks · No help!</div>
           <div class="level-best" id="best-l3"></div>
         </div>
         <span class="level-lock" id="lock-l3">🔒</span>
@@ -1177,80 +1177,144 @@ const questionsL2 = [
     lat: -6.4, lon: 34.9, mapLabel: "Tanzania", h: ["834"] },
 ];
 
+// ==================== LEVEL 2 BONUS DATA (fun fact recall) ====================
+const bonusDataL2 = [
+  // 0: Japan
+  {q:"How fast can Japan's Shinkansen bullet trains go?",a:"320 km/h",w:["200 km/h","400 km/h","280 km/h"]},
+  // 1: Amazon
+  {q:"The Amazon discharges more water than the next how many largest rivers combined?",a:"7",w:["3","5","10"]},
+  // 2: India
+  {q:"About how many large dams does India have?",a:"Over 5,000",w:["Over 1,000","Over 10,000","Over 500"]},
+  // 3: Norway
+  {q:"How long is Norway's coastline including all its fjords?",a:"Over 100,000 km",w:["Over 25,000 km","Over 50,000 km","Over 200,000 km"]},
+  // 4: Mexico
+  {q:"Mexico's Pacific coast is famous for watching which animals?",a:"Whales",w:["Dolphins","Sea turtles","Sharks"]},
+  // 5: Egypt
+  {q:"What do archaeologists believe about most of Egypt's ancient ruins?",a:"Still buried under sand",w:["All discovered already","Mostly underwater","Moved to museums"]},
+  // 6: Andes
+  {q:"How many active volcanoes do the Andes have?",a:"More than 50",w:["More than 10","More than 100","More than 200"]},
+  // 7: Australia
+  {q:"How old are some of Australia's ancient rainforests?",a:"Over 100 million years",w:["Over 10 million years","Over 1 million years","Over 50 million years"]},
+  // 8: Canada / Great Lakes
+  {q:"What percentage of the world's surface fresh water do the Great Lakes hold?",a:"About 21%",w:["About 5%","About 10%","About 50%"]},
+  // 9: Greece
+  {q:"What does Greece have more of than any other country?",a:"Archaeological museums",w:["Islands","Ancient temples","Olympic stadiums"]},
+  // 10: Kenya
+  {q:"What is the Maasai Mara named after?",a:"The Maasai people and Mara River",w:["A famous explorer","A type of animal","The local mountain"]},
+  // 11: China
+  {q:"About how many UNESCO Global Geoparks does China have?",a:"Over 40",w:["Over 10","Over 20","Over 60"]},
+  // 12: Scotland
+  {q:"What rare mammal is Scotland home to?",a:"The Scottish wildcat",w:["The highland fox","The mountain hare","The Scottish lynx"]},
+  // 13: Thailand
+  {q:"About how many Buddhist temples does Thailand have?",a:"Over 40,000",w:["Over 10,000","Over 5,000","Over 100,000"]},
+  // 14: Peru
+  {q:"How many varieties of potato grow in Peru?",a:"Over 3,000",w:["Over 500","Over 1,000","Over 5,000"]},
+  // 15: South Africa
+  {q:"Where does South Africa rank in global biodiversity?",a:"Third-highest",w:["First","Fifth-highest","Tenth-highest"]},
+  // 16: Iceland
+  {q:"What geological feature does Iceland sit on?",a:"The Mid-Atlantic Ridge",w:["The Ring of Fire","A dormant volcano","The Pacific Plate"]},
+  // 17: Tanzania
+  {q:"What is special about Tanzania's Ngorongoro Crater?",a:"Largest unbroken volcanic caldera",w:["Deepest crater on Earth","Smallest caldera","Oldest caldera on Earth"]},
+];
+
 // ==================== LEVEL 3 QUESTIONS — GEO MASTER ====================
 const questionsL3 = [
-  { question: "The Nile River flows through 11 countries. If each country has 24 river monitoring stations, how many stations total?",
-    answer: "264", emoji: "🏞️", category: "Africa",
-    funFact: "The Nile has been the lifeline of Egyptian civilization for over 5,000 years!",
-    lat: 15, lon: 30, mapLabel: "Nile River", h: ["818","736","800"] },
-  { question: "Japan's railway system carries 27 million passengers per day. If that's split across 9 major companies, how many per company?",
-    answer: "3000000", emoji: "🚄", category: "Japan",
-    funFact: "Japanese trains are famous for being almost perfectly on time — average delay is under 1 minute!",
-    lat: 36.2, lon: 138, mapLabel: "Japan", h: ["392"] },
-  { question: "Brazil's Amazon Rainforest covers 5,500,000 square km. If 12 research zones each cover 125 sq km, what's the total area researched?",
-    answer: "1500", emoji: "🌳", category: "Brazil",
-    funFact: "The Amazon produces about 6% of the world's oxygen and is home to 10% of all species on Earth!",
-    lat: -3.4, lon: -65, mapLabel: "Amazon", h: ["76"] },
-  { question: "The Great Wall of China used 3 billion bricks. If 15 factories each produced 200 bricks per day, how many bricks per day total?",
-    answer: "3000", emoji: "🇨🇳", category: "China",
-    funFact: "The Great Wall took over 2,000 years to build, with different dynasties adding sections!",
-    lat: 40.4, lon: 116.6, mapLabel: "Great Wall", h: ["156"] },
-  { question: "Australia's Great Barrier Reef has 2,900 individual reefs. If scientists survey 145 reefs per month, how many months to survey them all?",
-    answer: "20", emoji: "🐠", category: "Australia",
-    funFact: "The Great Barrier Reef is made up of nearly 3,000 individual reef systems and hundreds of islands!",
-    lat: -18.3, lon: 147.7, mapLabel: "Barrier Reef", h: ["36"] },
-  { question: "Russia spans 11 time zones covering 17,098,242 sq km. If you divide Russia into 11 equal zones, about how many million sq km per zone? (Round to nearest whole number)",
-    answer: "2", emoji: "🇷🇺", category: "Russia",
-    funFact: "Russia is so wide that when it's midnight in Kaliningrad, it's already 10 AM in Kamchatka!",
-    lat: 61.5, lon: 105, mapLabel: "Russia", h: ["643"] },
-  { question: "The Sahara Desert is 9,200,000 sq km. If a research team explores 46 sq km per day, how many days for 1,380 sq km?",
-    answer: "30", emoji: "🏜️", category: "Africa",
-    funFact: "The Sahara was once lush and green — cave paintings show hippos and crocodiles living there!",
-    lat: 23.4, lon: 3, mapLabel: "Sahara", h: null },
-  { question: "Canada has 48 national parks covering 340,000 sq km. If each park averages 125,000 visitors per year, and there are 8 parks in the Rockies, how many visitors do the Rocky Mountain parks get?",
-    answer: "1000000", emoji: "🇨🇦", category: "Canada",
-    funFact: "Canada's Banff was the world's third national park, established in 1885!",
-    lat: 51.2, lon: -116.2, mapLabel: "Rockies", h: ["124"] },
-  { question: "The Alps stretch 1,200 km. If a hiker covers 24 km per day, how many days to hike the full length?",
-    answer: "50", emoji: "⛷️", category: "The Alps",
-    funFact: "The Alps are home to over 13,000 plant species and 30,000 animal species!",
-    lat: 46.5, lon: 10, mapLabel: "The Alps", h: null },
-  { question: "Indonesia has 17,508 islands. If only 6,000 are inhabited, and each inhabited island averages 45 villages, how many villages is that?",
-    answer: "270000", emoji: "🇮🇩", category: "Indonesia",
-    funFact: "Indonesia straddles the Equator and has the second-highest level of biodiversity on the planet!",
-    lat: -2.5, lon: 118, mapLabel: "Indonesia", h: ["360"] },
-  { question: "The Amazon River is 6,400 km long. A boat travels at 32 km per hour. How many hours to travel 1,600 km?",
-    answer: "50", emoji: "🚣", category: "South America",
-    funFact: "The Amazon carries one-fifth of all river water on Earth into the Atlantic Ocean!",
-    lat: -3.1, lon: -60, mapLabel: "Amazon River", h: ["76"] },
-  { question: "Antarctica's ice sheet is up to 4,776 meters thick. If it melts at 2 meters per century at current rates, how many centuries for 150 meters to melt?",
-    answer: "75", emoji: "🧊", category: "Antarctica",
-    funFact: "If all of Antarctica's ice melted, global sea levels would rise by about 58 meters!",
-    lat: -82, lon: 0, mapLabel: "Antarctica", h: ["10"] },
-  { question: "India has 1,400,000,000 people across 28 states. If 7 states account for 56% of the population, what is 56% of 1,400 (in millions)?",
-    answer: "784", emoji: "🇮🇳", category: "India",
-    funFact: "India became the world's most populous country in 2023, surpassing China!",
-    lat: 20.6, lon: 79, mapLabel: "India", h: ["356"] },
-  { question: "The Pacific Ocean covers 165,250,000 sq km. If the Atlantic Ocean is 106,460,000 sq km, what's the difference in millions of sq km? (Round to nearest whole number)",
-    answer: "59", emoji: "🌊", category: "Pacific Ocean",
-    funFact: "The Pacific Ocean's name comes from 'Mar Pacífico' meaning 'peaceful sea,' named by Ferdinand Magellan!",
-    lat: 0, lon: -160, mapLabel: "Pacific Ocean", h: null },
-  { question: "The Trans-Siberian Railway is 9,289 km long. If a train averages 62 km per hour for a 6-day trip, how many hours is the trip? (Round to nearest whole number)",
-    answer: "150", emoji: "🚂", category: "Russia",
-    funFact: "A non-stop trip on the Trans-Siberian from Moscow to Vladivostok takes about 6 days and 3 hours!",
-    lat: 55.8, lon: 90, mapLabel: "Siberia", h: ["643"] },
-  { question: "Mount Everest is 8,849 meters tall. K2 is 8,611 meters. What is the height difference in meters?",
-    answer: "238", emoji: "🏔️", category: "Himalayas",
-    funFact: "K2 is considered much more dangerous to climb than Everest — it's called the 'Savage Mountain'!",
-    lat: 35.9, lon: 76.5, mapLabel: "K2", h: ["586"] },
-  { question: "Chile is 4,300 km long. If a bus travels 860 km per day, how many days to drive the full length?",
-    answer: "5", emoji: "🇨🇱", category: "Chile",
-    funFact: "Chile is the longest north-south country in the world, stretching over 38 degrees of latitude!",
+  // === × 9 TRICKS ===
+  { question: "The Philippines has over 7,000 islands! If 9 marine research teams each study 16 islands, how many islands are studied total?",
+    answer: "144", emoji: "🇵🇭", category: "Philippines",
+    funFact: "The Philippines is one of the most biodiverse countries on Earth, with more species per square km than almost anywhere!",
+    trick: "💡 <strong>× 9 Trick:</strong> Instead of 9 × 16, think <em>10 × 16 = 160</em>, then subtract 16. <em>160 − 16 = 144!</em>",
+    lat: 12.9, lon: 121.8, mapLabel: "Philippines", h: ["608"] },
+  { question: "Colombia has 9 bird-watching regions. If each region has 21 guided trails, how many trails total?",
+    answer: "189", emoji: "🦜", category: "Colombia",
+    funFact: "Colombia has more species of birds than any other country — over 1,900!",
+    trick: "💡 <strong>× 9 Trick:</strong> Instead of 9 × 21, think <em>10 × 21 = 210</em>, then subtract 21. <em>210 − 21 = 189!</em>",
+    lat: 4.6, lon: -74.1, mapLabel: "Colombia", h: ["170"] },
+  { question: "Tanzania has 9 national parks on its Northern Safari Circuit. If each park has 24 guided safari routes, how many routes total?",
+    answer: "216", emoji: "🦒", category: "Tanzania",
+    funFact: "The Serengeti's Great Migration is the largest movement of land animals on Earth!",
+    trick: "💡 <strong>× 9 Trick:</strong> Instead of 9 × 24, think <em>10 × 24 = 240</em>, then subtract 24. <em>240 − 24 = 216!</em>",
+    lat: -6.4, lon: 34.9, mapLabel: "Tanzania", h: ["834"] },
+  // === × 11 TRICKS ===
+  { question: "The Mediterranean Sea touches 11 European countries. If each country has 14 major ports on it, how many ports total?",
+    answer: "154", emoji: "⛵", category: "Mediterranean",
+    funFact: "The Mediterranean Sea is almost completely surrounded by land — its only natural opening is the Strait of Gibraltar!",
+    trick: "💡 <strong>× 11 Trick:</strong> Instead of 11 × 14, think <em>10 × 14 = 140</em>, then add one more 14. <em>140 + 14 = 154!</em>",
+    lat: 35, lon: 18, mapLabel: "Mediterranean", h: null },
+  { question: "South Korea has 11 major mountain ranges. If each range has 17 hiking shelters, how many shelters total?",
+    answer: "187", emoji: "🇰🇷", category: "South Korea",
+    funFact: "About 70% of South Korea is covered in mountains — hiking is the most popular outdoor activity there!",
+    trick: "💡 <strong>× 11 Trick:</strong> Instead of 11 × 17, think <em>10 × 17 = 170</em>, then add 17. <em>170 + 17 = 187!</em>",
+    lat: 36.5, lon: 128, mapLabel: "South Korea", h: ["410"] },
+  { question: "Vietnam has 11 national parks in its northern highlands. If each park protects 22 species of primate, how many primate populations total?",
+    answer: "242", emoji: "🇻🇳", category: "Vietnam",
+    funFact: "Vietnam's Ha Long Bay has nearly 2,000 limestone islands and is a UNESCO World Heritage Site!",
+    trick: "💡 <strong>× 11 Trick:</strong> Instead of 11 × 22, think <em>10 × 22 = 220</em>, then add 22. <em>220 + 22 = 242!</em>",
+    lat: 21, lon: 106, mapLabel: "Vietnam", h: ["704"] },
+  // === × 5 TRICKS ===
+  { question: "Argentina has 5 major climate zones. If each zone has 42 weather stations, how many stations total?",
+    answer: "210", emoji: "🇦🇷", category: "Argentina",
+    funFact: "Argentina stretches from tropical jungles in the north to glaciers near Antarctica in the south!",
+    trick: "💡 <strong>× 5 Trick:</strong> Instead of 5 × 42, halve 42 to get 21, then multiply by 10. <em>21 × 10 = 210!</em>",
+    lat: -38.4, lon: -63.6, mapLabel: "Argentina", h: ["32"] },
+  { question: "Pakistan is famous for its 5 mighty rivers. If 78 bridges cross each river, how many bridges total?",
+    answer: "390", emoji: "🇵🇰", category: "Pakistan",
+    funFact: "The five rivers of Pakistan's Punjab region give the province its name — 'Punjab' means 'Land of Five Rivers'!",
+    trick: "💡 <strong>× 5 Trick:</strong> Instead of 5 × 78, halve 78 to get 39, then multiply by 10. <em>39 × 10 = 390!</em>",
+    lat: 30.4, lon: 69.3, mapLabel: "Pakistan", h: ["586"] },
+  { question: "Greece has 5 major island groups in the Aegean Sea. If 86 ferries serve each group, how many ferries total?",
+    answer: "430", emoji: "🇬🇷", category: "Greece",
+    funFact: "Greece has over 6,000 islands, but only about 230 of them are inhabited!",
+    trick: "💡 <strong>× 5 Trick:</strong> Instead of 5 × 86, halve 86 to get 43, then multiply by 10. <em>43 × 10 = 430!</em>",
+    lat: 39.1, lon: 21.8, mapLabel: "Greece", h: ["300"] },
+  // === × 99 TRICKS ===
+  { question: "Madagascar is home to 99 species of lemur found nowhere else on Earth. If 8 wildlife reserves each protect all species, how many protections total?",
+    answer: "792", emoji: "🦊", category: "Madagascar",
+    funFact: "Madagascar split from India about 88 million years ago, which is why its wildlife is so unique!",
+    trick: "💡 <strong>× 99 Trick:</strong> Instead of 99 × 8, think <em>100 × 8 = 800</em>, then subtract 8. <em>800 − 8 = 792!</em>",
+    lat: -18.8, lon: 47.5, mapLabel: "Madagascar", h: ["450"] },
+  { question: "Ecuador is home to 99 species of hummingbird. If 4 scientists study each species, how many scientists total?",
+    answer: "396", emoji: "🐦", category: "Ecuador",
+    funFact: "Ecuador is named after the equator — it's one of only a few countries the equator passes directly through!",
+    trick: "💡 <strong>× 99 Trick:</strong> Instead of 99 × 4, think <em>100 × 4 = 400</em>, then subtract 4. <em>400 − 4 = 396!</em>",
+    lat: -1.8, lon: -78.2, mapLabel: "Ecuador", h: ["218"] },
+  { question: "New Zealand waters are home to 99 species of native marine mammal and seabird. If 3 conservation centers each track all species, how many tracking records?",
+    answer: "297", emoji: "🐬", category: "New Zealand",
+    funFact: "New Zealand was the last large landmass on Earth to be settled by humans — around 1300 AD!",
+    trick: "💡 <strong>× 99 Trick:</strong> Instead of 99 × 3, think <em>100 × 3 = 300</em>, then subtract 3. <em>300 − 3 = 297!</em>",
+    lat: -41.3, lon: 174.8, mapLabel: "New Zealand", h: ["554"] },
+  // === × 25 TRICKS ===
+  { question: "Chile has 25 protected forest reserves. If each reserve has 8 ranger stations, how many stations total?",
+    answer: "200", emoji: "🇨🇱", category: "Chile",
+    funFact: "Chile is the longest north-south country in the world, stretching over 4,300 km!",
+    trick: "💡 <strong>× 25 Trick:</strong> Think in quarters! 25 × 4 = 100, so 25 × 8 = two hundreds. <em>100 + 100 = 200!</em>",
     lat: -35.7, lon: -71.5, mapLabel: "Chile", h: ["152"] },
-  { question: "The Mariana Trench is 10,994 meters deep. If a submarine descends 122 meters per minute, how many minutes to reach 7,320 meters depth?",
-    answer: "60", emoji: "🌊", category: "Pacific Ocean",
-    funFact: "Only three people have ever reached the bottom of the Mariana Trench — it's harder to get to than the Moon!",
-    lat: 11.3, lon: 142.2, mapLabel: "Mariana Trench", h: null },
+  { question: "Indonesia monitors 25 highly active volcanoes. If 16 sensors are placed on each volcano, how many sensors total?",
+    answer: "400", emoji: "🌋", category: "Indonesia",
+    funFact: "Indonesia has more active volcanoes than any other country — it sits on the Pacific Ring of Fire!",
+    trick: "💡 <strong>× 25 Trick:</strong> Think in quarters! 25 × 4 = 100, and 16 = 4 × 4, so <em>25 × 16 = 4 × 100 = 400!</em>",
+    lat: -2.5, lon: 118, mapLabel: "Indonesia", h: ["360"] },
+  { question: "Canada has 25 major marine conservation areas. If 20 species are tracked in each one, how many tracking programs total?",
+    answer: "500", emoji: "🇨🇦", category: "Canada",
+    funFact: "Canada has the longest coastline of any country in the world — over 200,000 km!",
+    trick: "💡 <strong>× 25 Trick:</strong> Think in quarters! 25 × 4 = 100, and 20 = 5 × 4, so <em>25 × 20 = 5 × 100 = 500!</em>",
+    lat: 56.1, lon: -106.3, mapLabel: "Canada", h: ["124"] },
+  // === NEAR-ROUND-NUMBER TRICKS ===
+  { question: "Turkey's largest city Istanbul has 39 districts. If each district has 3 major historical sites, how many sites total?",
+    answer: "117", emoji: "🇹🇷", category: "Turkey",
+    funFact: "Istanbul is the only city in the world that sits on two continents — Europe and Asia!",
+    trick: "💡 <strong>Near-Round Trick:</strong> Instead of 39 × 3, think <em>40 × 3 = 120</em>, then subtract 3. <em>120 − 3 = 117!</em>",
+    lat: 41, lon: 29, mapLabel: "Istanbul", h: ["792"] },
+  { question: "Nepal has 29 mountain peaks above 7,500 meters. If 6 climbing expeditions attempt each peak per year, how many expeditions total?",
+    answer: "174", emoji: "🏔️", category: "Nepal",
+    funFact: "Nepal is home to 8 of the world's 14 highest mountains, including Mount Everest!",
+    trick: "💡 <strong>Near-Round Trick:</strong> Instead of 29 × 6, think <em>30 × 6 = 180</em>, then subtract 6. <em>180 − 6 = 174!</em>",
+    lat: 28.4, lon: 84.1, mapLabel: "Nepal", h: ["524"] },
+  { question: "Peru has 49 native languages still spoken today. If 4 schools teach each language, how many language programs total?",
+    answer: "196", emoji: "🇵🇪", category: "Peru",
+    funFact: "Peru is the birthplace of the potato — over 3,000 varieties grow there!",
+    trick: "💡 <strong>Near-Round Trick:</strong> Instead of 49 × 4, think <em>50 × 4 = 200</em>, then subtract 4. <em>200 − 4 = 196!</em>",
+    lat: -13.2, lon: -72.5, mapLabel: "Peru", h: ["604"] },
 ];
 
 // ==================== GEO MASTER FACTS (L3 midpoint) ====================
@@ -1514,8 +1578,8 @@ function selectAnswer(index) {
   }
   document.getElementById('fun-fact').innerHTML = `<strong>Fun Fact:</strong> ${q.funFact}`;
 
-  // L2: show math trick
-  if (state.level === 2 && q.trick) {
+  // Show math trick (L2)
+  if (q.trick) {
     const trickEl = document.getElementById('math-trick');
     trickEl.innerHTML = q.trick;
     trickEl.className = 'math-trick show';
@@ -1565,6 +1629,12 @@ function submitL3Answer() {
     if (streakBonus > 0) pText += ` (includes +${streakBonus} streak bonus!)`;
     document.getElementById('feedback-points').innerHTML = `<span class="points">${pText}</span>`;
     document.getElementById('fun-fact').innerHTML = `<strong>Fun Fact:</strong> ${q.funFact}`;
+    // L3: show math trick
+    if (q.trick) {
+      const trickEl = document.getElementById('math-trick');
+      trickEl.innerHTML = q.trick;
+      trickEl.className = 'math-trick show';
+    }
     document.getElementById('btn-next').textContent = state.questionIndex === 9 ? 'See Results!' : 'Next Question';
   } else if (state.l3Tries >= 2) {
     // Second wrong try — reveal answer
@@ -1583,6 +1653,12 @@ function submitL3Answer() {
     document.getElementById('feedback-header').textContent = 'Not this time!';
     document.getElementById('feedback-points').innerHTML = `<span style="color:#888;">The answer was: <strong>${q.answer}</strong></span>`;
     document.getElementById('fun-fact').innerHTML = `<strong>Fun Fact:</strong> ${q.funFact}`;
+    // L3: show math trick
+    if (q.trick) {
+      const trickEl = document.getElementById('math-trick');
+      trickEl.innerHTML = q.trick;
+      trickEl.className = 'math-trick show';
+    }
     document.getElementById('btn-next').textContent = state.questionIndex === 9 ? 'See Results!' : 'Next Question';
   } else {
     // First wrong try — nudge
@@ -1596,7 +1672,7 @@ function submitL3Answer() {
 
 // ==================== NEXT QUESTION ====================
 function nextQuestion() {
-  // If exiting bonus (L1 only), go back to normal flow
+  // If exiting bonus (L1/L2), go back to normal flow
   if (state.exitingBonus) {
     state.exitingBonus = false;
     state.inBonus = false;
@@ -1608,8 +1684,8 @@ function nextQuestion() {
 
   state.questionIndex++;
 
-  // L1: Bonus rounds at Q5 and Q10
-  if (state.level === 1) {
+  // L1 + L2: Bonus rounds at Q5 and Q10
+  if (state.level === 1 || state.level === 2) {
     if (state.questionIndex === 5 && !state.bonusDone1) {
       state.bonusDone1 = true;
       showBonusRound(0, 5);
@@ -1633,15 +1709,18 @@ function nextQuestion() {
   else renderQuestion();
 }
 
-// ==================== BONUS ROUND (L1 only) ====================
+// ==================== BONUS ROUND (L1 + L2) ====================
 function showBonusRound(fromIdx, toIdx) {
   state.inBonus = true;
   document.getElementById('game-screen').classList.add('bonus-active');
 
+  const qBank = state.level === 2 ? questionsL2 : questions;
+  const bData = state.level === 2 ? bonusDataL2 : bonusData;
+
   const candidates = [];
   for (let i = fromIdx; i < toIdx && i < state.currentQuestions.length; i++) {
-    const origIdx = questions.indexOf(state.currentQuestions[i]);
-    if (origIdx >= 0 && bonusData[origIdx]) {
+    const origIdx = qBank.indexOf(state.currentQuestions[i]);
+    if (origIdx >= 0 && bData[origIdx]) {
       candidates.push({ questionObj: state.currentQuestions[i], bonusIdx: origIdx });
     }
   }
@@ -1653,7 +1732,7 @@ function showBonusRound(fromIdx, toIdx) {
   }
 
   const pick = candidates[Math.floor(Math.random() * candidates.length)];
-  const bd = bonusData[pick.bonusIdx];
+  const bd = bData[pick.bonusIdx];
   const origQ = pick.questionObj;
 
   renderMiniMap(origQ.lat, origQ.lon, origQ.mapLabel, origQ.h);
@@ -1798,15 +1877,19 @@ function showResults() {
     unlockEl.innerHTML = '<div class="unlock-banner">🎉 You unlocked Geo Master! ⭐</div>';
   }
 
-  // Reset sign form and load wall of fame
-  document.getElementById('wof-form-area').innerHTML = `
-    <div class="wof-sign-form" id="wof-sign-form">
-      <label for="wof-name">Your explorer name</label>
-      <input type="text" id="wof-name" placeholder="e.g. Captain Geography" maxlength="30">
-      <label for="wof-msg">Leave a message <span style="color:#bbb;">(optional)</span></label>
-      <textarea id="wof-msg" placeholder="That was awesome!" maxlength="120"></textarea>
-      <button class="btn-sign" id="btn-sign" onclick="signWallOfFame()">Sign the Wall! ✨</button>
-    </div>`;
+  // Reset sign form (only show if they haven't signed this session)
+  if (hasSignedThisSession) {
+    document.getElementById('wof-form-area').innerHTML = '<div class="wof-signed">✅ You\'re on the Wall of Fame!</div>';
+  } else {
+    document.getElementById('wof-form-area').innerHTML = `
+      <div class="wof-sign-form" id="wof-sign-form">
+        <label for="wof-name">Your explorer name</label>
+        <input type="text" id="wof-name" placeholder="e.g. Captain Geography" maxlength="30">
+        <label for="wof-msg">Leave a message <span style="color:#bbb;">(optional)</span></label>
+        <textarea id="wof-msg" placeholder="That was awesome!" maxlength="120"></textarea>
+        <button class="btn-sign" id="btn-sign" onclick="signWallOfFame()">Sign the Wall! ✨</button>
+      </div>`;
+  }
   loadWallOfFame();
 }
 
@@ -1846,6 +1929,7 @@ function spawnConfetti(count) {
 
 // ==================== WALL OF FAME (Firebase REST API) ====================
 const FIREBASE_URL = 'https://geomath2-9ae5f-default-rtdb.firebaseio.com';
+let hasSignedThisSession = false;
 
 // Profanity filter — blocks obvious bad words before they reach the database
 const BLOCKED_WORDS = [
@@ -1932,7 +2016,8 @@ async function signWallOfFame() {
     });
     // Notify admin via email (fire-and-forget)
     notifyNewSignature(entry);
-    // Replace form with confirmation
+    // Replace form with confirmation & remember for this session
+    hasSignedThisSession = true;
     document.getElementById('wof-form-area').innerHTML = '<div class="wof-signed">✅ Signed! You\'re on the Wall of Fame!</div>';
     loadWallOfFame();
   } catch (err) {
@@ -1962,12 +2047,15 @@ function notifyNewSignature(entry) {
       level: levelNames[entry.level] || 'Level ' + entry.level,
       score: entry.score,
       time: new Date().toLocaleString()
-    }, EMAILJS_KEY);
+    });
   } catch (e) { /* silent — email is best-effort */ }
 }
 
 // ==================== INIT ====================
 (function init() {
+  // Initialize EmailJS for admin notifications
+  emailjs.init({ publicKey: EMAILJS_KEY });
+
   // Migrate old best score
   const oldBest = localStorage.getItem('geomath-best');
   if (oldBest && !localStorage.getItem('geomath-best-l1')) {
