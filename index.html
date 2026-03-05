@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GeoMath Adventure!</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://d3js.org/topojson.v3.min.js"></script>
   <style>
@@ -1929,6 +1930,8 @@ async function signWallOfFame() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(entry)
     });
+    // Notify admin via email (fire-and-forget)
+    notifyNewSignature(entry);
     // Replace form with confirmation
     document.getElementById('wof-form-area').innerHTML = '<div class="wof-signed">✅ Signed! You\'re on the Wall of Fame!</div>';
     loadWallOfFame();
@@ -1943,6 +1946,24 @@ function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+// Email notification on new signature (fire-and-forget, never blocks UX)
+const EMAILJS_SERVICE = 'service_x2guawh';
+const EMAILJS_TEMPLATE = 'template_rfk8owo';
+const EMAILJS_KEY = 'n1kD8C30-3_VKqKmS';
+
+function notifyNewSignature(entry) {
+  const levelNames = { 1: 'Junior Explorer 🌱', 2: 'Math Trickster 🧠', 3: 'Geo Master ⭐' };
+  try {
+    emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, {
+      name: entry.name,
+      message: entry.msg || '(no message)',
+      level: levelNames[entry.level] || 'Level ' + entry.level,
+      score: entry.score,
+      time: new Date().toLocaleString()
+    }, EMAILJS_KEY);
+  } catch (e) { /* silent — email is best-effort */ }
 }
 
 // ==================== INIT ====================
