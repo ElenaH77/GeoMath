@@ -1962,36 +1962,48 @@ function showWallOfFameScreen() {
   loadWallOfFameInto('wof-entries-standalone');
 }
 
+function renderWofEntries(container, data, emptyMsg) {
+  if (!data || Object.keys(data).length === 0) {
+    container.innerHTML = `<div class="wof-empty">${emptyMsg}</div>`;
+    return;
+  }
+  // Filter out broken entries (missing name or timestamp), then sort newest first
+  const entries = Object.values(data)
+    .filter(e => e && e.name && e.ts)
+    .sort((a, b) => b.ts - a.ts);
+  if (entries.length === 0) {
+    container.innerHTML = `<div class="wof-empty">${emptyMsg}</div>`;
+    return;
+  }
+  container.innerHTML = '';
+  const levelNames = { 1: '🌱 L1', 2: '🧠 L2', 3: '⭐ L3' };
+  const levelClasses = { 1: 'l1', 2: 'l2', 3: 'l3' };
+  entries.forEach(e => {
+    const div = document.createElement('div');
+    div.className = 'wof-entry';
+    const date = new Date(e.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const score = e.score != null ? e.score : 0;
+    div.innerHTML = `
+      <div class="wof-entry-header">
+        <span class="wof-name">${escapeHtml(e.name)}</span>
+        <span class="wof-meta">
+          <span class="wof-score-tag ${levelClasses[e.level] || 'l1'}">${levelNames[e.level] || 'L1'} · ${score} pts</span>
+          &nbsp;${date}
+        </span>
+      </div>
+      ${e.msg ? `<div class="wof-message">"${escapeHtml(e.msg)}"</div>` : ''}
+    `;
+    container.appendChild(div);
+  });
+}
+
 async function loadWallOfFameInto(containerId) {
   const container = document.getElementById(containerId);
   container.innerHTML = '<div class="wof-loading">Loading signatures...</div>';
   try {
     const res = await fetch(`${FIREBASE_URL}/guestbook.json?orderBy="ts"&limitToLast=50`);
     const data = await res.json();
-    if (!data || Object.keys(data).length === 0) {
-      container.innerHTML = '<div class="wof-empty">No signatures yet — play and be the first! 🌟</div>';
-      return;
-    }
-    const entries = Object.values(data).sort((a, b) => b.ts - a.ts);
-    container.innerHTML = '';
-    const levelNames = { 1: '🌱 L1', 2: '🧠 L2', 3: '⭐ L3' };
-    const levelClasses = { 1: 'l1', 2: 'l2', 3: 'l3' };
-    entries.forEach(e => {
-      const div = document.createElement('div');
-      div.className = 'wof-entry';
-      const date = new Date(e.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      div.innerHTML = `
-        <div class="wof-entry-header">
-          <span class="wof-name">${escapeHtml(e.name)}</span>
-          <span class="wof-meta">
-            <span class="wof-score-tag ${levelClasses[e.level] || 'l1'}">${levelNames[e.level] || 'L1'} · ${e.score} pts</span>
-            &nbsp;${date}
-          </span>
-        </div>
-        ${e.msg ? `<div class="wof-message">"${escapeHtml(e.msg)}"</div>` : ''}
-      `;
-      container.appendChild(div);
-    });
+    renderWofEntries(container, data, 'No signatures yet — play and be the first! 🌟');
   } catch (err) {
     container.innerHTML = '<div class="wof-empty">Could not load signatures right now.</div>';
   }
@@ -2003,31 +2015,7 @@ async function loadWallOfFame() {
   try {
     const res = await fetch(`${FIREBASE_URL}/guestbook.json?orderBy="ts"&limitToLast=50`);
     const data = await res.json();
-    if (!data || Object.keys(data).length === 0) {
-      container.innerHTML = '<div class="wof-empty">No signatures yet — be the first! 🌟</div>';
-      return;
-    }
-    // Convert to array and sort newest first
-    const entries = Object.values(data).sort((a, b) => b.ts - a.ts);
-    container.innerHTML = '';
-    const levelNames = { 1: '🌱 L1', 2: '🧠 L2', 3: '⭐ L3' };
-    const levelClasses = { 1: 'l1', 2: 'l2', 3: 'l3' };
-    entries.forEach(e => {
-      const div = document.createElement('div');
-      div.className = 'wof-entry';
-      const date = new Date(e.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      div.innerHTML = `
-        <div class="wof-entry-header">
-          <span class="wof-name">${escapeHtml(e.name)}</span>
-          <span class="wof-meta">
-            <span class="wof-score-tag ${levelClasses[e.level] || 'l1'}">${levelNames[e.level] || 'L1'} · ${e.score} pts</span>
-            &nbsp;${date}
-          </span>
-        </div>
-        ${e.msg ? `<div class="wof-message">"${escapeHtml(e.msg)}"</div>` : ''}
-      `;
-      container.appendChild(div);
-    });
+    renderWofEntries(container, data, 'No signatures yet — be the first! 🌟');
   } catch (err) {
     container.innerHTML = '<div class="wof-empty">Could not load signatures right now.</div>';
   }
