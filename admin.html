@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeoMath Admin — Wall of Fame</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --purple: #7209b7; --red: #ef476f; --green: #06d6a0; --dark: #1a1a2e; --gold: #ffd166; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Nunito', sans-serif; background: #f4f0ff; min-height: 100vh; padding: 24px;
+    }
+    h1 { font-family: 'Fredoka One', cursive; color: var(--purple); text-align: center; margin-bottom: 8px; }
+    .subtitle { text-align: center; color: #888; font-weight: 700; margin-bottom: 24px; }
+    .container { max-width: 700px; margin: 0 auto; }
+
+    /* Gate */
+    .gate { text-align: center; margin-top: 80px; }
+    .gate input {
+      padding: 12px 20px; font-size: 1.1em; border: 2px solid #ddd; border-radius: 12px;
+      font-family: 'Nunito', sans-serif; font-weight: 700; outline: none; width: 280px; text-align: center;
+    }
+    .gate input:focus { border-color: var(--purple); }
+    .gate button {
+      display: block; margin: 16px auto 0; padding: 10px 32px; background: var(--purple); color: white;
+      border: none; border-radius: 50px; font-family: 'Fredoka One', cursive; font-size: 1em; cursor: pointer;
+    }
+    .gate-error { color: var(--red); font-weight: 700; margin-top: 8px; }
+
+    /* Admin panel */
+    .admin { display: none; }
+    .admin.show { display: block; }
+    .stats { display: flex; gap: 16px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; }
+    .stat-box {
+      background: white; padding: 12px 20px; border-radius: 12px; text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08); min-width: 100px;
+    }
+    .stat-box .num { font-family: 'Fredoka One', cursive; font-size: 1.8em; color: var(--purple); }
+    .stat-box .label { font-size: 0.8em; color: #888; font-weight: 700; }
+
+    .entry {
+      background: white; border-radius: 14px; padding: 16px 20px; margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: center;
+    }
+    .entry-info { flex: 1; }
+    .entry-name { font-family: 'Fredoka One', cursive; color: var(--dark); }
+    .entry-msg { color: #666; font-style: italic; font-size: 0.9em; margin-top: 2px; }
+    .entry-meta { color: #aaa; font-size: 0.8em; font-weight: 700; margin-top: 4px; }
+    .btn-delete {
+      background: var(--red); color: white; border: none; padding: 8px 16px; border-radius: 10px;
+      font-family: 'Fredoka One', cursive; font-size: 0.85em; cursor: pointer; margin-left: 12px;
+      transition: opacity 0.2s; white-space: nowrap;
+    }
+    .btn-delete:hover { opacity: 0.8; }
+    .empty { text-align: center; color: #bbb; font-weight: 700; padding: 40px; }
+    .refresh-bar { text-align: center; margin-bottom: 16px; }
+    .btn-refresh {
+      background: white; border: 2px solid var(--purple); color: var(--purple); padding: 8px 24px;
+      border-radius: 50px; font-family: 'Fredoka One', cursive; font-size: 0.9em; cursor: pointer;
+    }
+    .btn-refresh:hover { background: var(--purple); color: white; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🛡️ GeoMath Admin</h1>
+  <p class="subtitle">Wall of Fame Moderation</p>
+
+  <div class="gate" id="gate">
+    <p style="font-weight:700;color:#555;margin-bottom:12px;">Enter the admin passphrase:</p>
+    <input type="password" id="passphrase" placeholder="Passphrase" autofocus>
+    <button onclick="tryLogin()">Enter</button>
+    <div class="gate-error" id="gate-error"></div>
+  </div>
+
+  <div class="admin" id="admin">
+    <div class="stats" id="stats"></div>
+    <div class="refresh-bar">
+      <button class="btn-refresh" onclick="loadEntries()">🔄 Refresh</button>
+    </div>
+    <div id="entries"></div>
+  </div>
+</div>
+
+<script>
+const FIREBASE_URL = 'https://geomath2-9ae5f-default-rtdb.firebaseio.com';
+// Simple client-side passphrase — not military-grade, but keeps random visitors out.
+// Change this to whatever you want!
+const ADMIN_PASS = 'geomath-admin-2026';
+
+function tryLogin() {
+  const input = document.getElementById('passphrase');
+  if (input.value === ADMIN_PASS) {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('admin').className = 'admin show';
+    loadEntries();
+  } else {
+    document.getElementById('gate-error').textContent = 'Wrong passphrase.';
+    input.value = '';
+    input.focus();
+  }
+}
+document.getElementById('passphrase').addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+
+async function loadEntries() {
+  const container = document.getElementById('entries');
+  container.innerHTML = '<div class="empty">Loading...</div>';
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guestbook.json`);
+    const data = await res.json();
+    if (!data || Object.keys(data).length === 0) {
+      container.innerHTML = '<div class="empty">No entries yet.</div>';
+      updateStats(0, {});
+      return;
+    }
+    // Convert to array with keys, sort newest first
+    const entries = Object.entries(data).map(([key, val]) => ({ key, ...val })).sort((a, b) => b.ts - a.ts);
+    updateStats(entries.length, data);
+    container.innerHTML = '';
+    const levelNames = { 1: '🌱 Junior Explorer', 2: '🧠 Math Trickster', 3: '⭐ Geo Master' };
+    entries.forEach(e => {
+      const div = document.createElement('div');
+      div.className = 'entry';
+      const date = new Date(e.ts).toLocaleString();
+      div.innerHTML = `
+        <div class="entry-info">
+          <div class="entry-name">${esc(e.name)}</div>
+          ${e.msg ? `<div class="entry-msg">"${esc(e.msg)}"</div>` : ''}
+          <div class="entry-meta">${levelNames[e.level] || 'L1'} · ${e.score} pts · ${date}</div>
+        </div>
+      `;
+      const btn = document.createElement('button');
+      btn.className = 'btn-delete';
+      btn.textContent = '🗑️ Delete';
+      btn.onclick = () => deleteEntry(e.key, e.name);
+      div.appendChild(btn);
+      container.appendChild(div);
+    });
+  } catch (err) {
+    container.innerHTML = '<div class="empty">Error loading entries.</div>';
+  }
+}
+
+function updateStats(total, data) {
+  const entries = data ? Object.values(data) : [];
+  const today = new Date().toDateString();
+  const todayCount = entries.filter(e => new Date(e.ts).toDateString() === today).length;
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-box"><div class="num">${total}</div><div class="label">Total</div></div>
+    <div class="stat-box"><div class="num">${todayCount}</div><div class="label">Today</div></div>
+  `;
+}
+
+async function deleteEntry(key, name) {
+  if (!confirm(`Delete entry from "${name}"?`)) return;
+  try {
+    await fetch(`${FIREBASE_URL}/guestbook/${key}.json`, { method: 'DELETE' });
+    loadEntries();
+  } catch (err) {
+    alert('Failed to delete. Try again.');
+  }
+}
+
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>

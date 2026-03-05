@@ -1846,6 +1846,20 @@ function spawnConfetti(count) {
 // ==================== WALL OF FAME (Firebase REST API) ====================
 const FIREBASE_URL = 'https://geomath2-9ae5f-default-rtdb.firebaseio.com';
 
+// Profanity filter — blocks obvious bad words before they reach the database
+const BLOCKED_WORDS = [
+  'ass','arse','bastard','bitch','bloody','bollocks','crap','cunt','damn','dick',
+  'fuck','hell','idiot','jerk','nigger','piss','prick','shit','slut','stupid',
+  'whore','wanker','retard','moron','douche','fag','homo','twat','cock',
+  'butthole','asshole','dumbass','jackass','bullshit',
+  'motherfuck','stfu','wtf','milf','thot','kys','nazi','porn','sex'
+];
+function containsBadWords(text) {
+  const lower = text.toLowerCase().replace(/[^a-z]/g, ' ');
+  const words = lower.split(/\s+/);
+  return words.some(w => BLOCKED_WORDS.some(bw => w.includes(bw)));
+}
+
 async function loadWallOfFame() {
   const container = document.getElementById('wof-entries');
   container.innerHTML = '<div class="wof-loading">Loading signatures...</div>';
@@ -1887,8 +1901,17 @@ async function signWallOfFame() {
   const msgInput = document.getElementById('wof-msg');
   const btn = document.getElementById('btn-sign');
   const name = nameInput.value.trim();
+  const msg = msgInput.value.trim();
   if (!name) { nameInput.style.borderColor = '#ef476f'; nameInput.focus(); return; }
+  if (containsBadWords(name) || containsBadWords(msg)) {
+    nameInput.style.borderColor = '#ef476f';
+    msgInput.style.borderColor = '#ef476f';
+    document.getElementById('wof-form-area').insertAdjacentHTML('afterbegin',
+      '<div style="color:#ef476f;font-weight:700;text-align:center;margin-bottom:8px;font-size:0.9em;">🚫 Please keep it friendly — this is for kids!</div>');
+    return;
+  }
   nameInput.style.borderColor = '';
+  msgInput.style.borderColor = '';
   btn.disabled = true;
   btn.textContent = 'Signing...';
 
