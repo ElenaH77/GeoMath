@@ -396,6 +396,9 @@
       </div>
     </div>
     <button class="btn-back" onclick="showScreen('welcome-screen')">← Back</button>
+    <div style="margin-top: 12px;">
+      <a href="#" onclick="event.preventDefault(); showWallOfFameScreen();" style="color: var(--purple); font-weight: 700; font-size: 0.95em; text-decoration: none; opacity: 0.7;">✍️ Wall of Fame</a>
+    </div>
   </div>
 
   <div id="geo-fact-screen" class="screen geo-fact-screen">
@@ -472,6 +475,15 @@
         <div class="wof-loading">Loading signatures...</div>
       </div>
     </div>
+  </div>
+
+  <div id="wof-screen" class="screen results-screen">
+    <h2>✍️ Wall of Fame</h2>
+    <p style="color:#888; font-weight:700; margin-bottom:20px;">Adventurers who completed GeoMath!</p>
+    <div class="wof-entries" id="wof-entries-standalone">
+      <div class="wof-loading">Loading signatures...</div>
+    </div>
+    <button class="btn-back" onclick="showScreen('welcome-screen')" style="margin-top:20px;">← Back</button>
   </div>
 </div>
 
@@ -1943,6 +1955,46 @@ function containsBadWords(text) {
   const lower = text.toLowerCase().replace(/[^a-z]/g, ' ');
   const words = lower.split(/\s+/);
   return words.some(w => BLOCKED_WORDS.some(bw => w.includes(bw)));
+}
+
+function showWallOfFameScreen() {
+  showScreen('wof-screen');
+  loadWallOfFameInto('wof-entries-standalone');
+}
+
+async function loadWallOfFameInto(containerId) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '<div class="wof-loading">Loading signatures...</div>';
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guestbook.json?orderBy="ts"&limitToLast=50`);
+    const data = await res.json();
+    if (!data || Object.keys(data).length === 0) {
+      container.innerHTML = '<div class="wof-empty">No signatures yet — play and be the first! 🌟</div>';
+      return;
+    }
+    const entries = Object.values(data).sort((a, b) => b.ts - a.ts);
+    container.innerHTML = '';
+    const levelNames = { 1: '🌱 L1', 2: '🧠 L2', 3: '⭐ L3' };
+    const levelClasses = { 1: 'l1', 2: 'l2', 3: 'l3' };
+    entries.forEach(e => {
+      const div = document.createElement('div');
+      div.className = 'wof-entry';
+      const date = new Date(e.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      div.innerHTML = `
+        <div class="wof-entry-header">
+          <span class="wof-name">${escapeHtml(e.name)}</span>
+          <span class="wof-meta">
+            <span class="wof-score-tag ${levelClasses[e.level] || 'l1'}">${levelNames[e.level] || 'L1'} · ${e.score} pts</span>
+            &nbsp;${date}
+          </span>
+        </div>
+        ${e.msg ? `<div class="wof-message">"${escapeHtml(e.msg)}"</div>` : ''}
+      `;
+      container.appendChild(div);
+    });
+  } catch (err) {
+    container.innerHTML = '<div class="wof-empty">Could not load signatures right now.</div>';
+  }
 }
 
 async function loadWallOfFame() {
