@@ -192,6 +192,94 @@
     }
     .btn-play-again:hover { transform: scale(1.05); }
     .new-best { color: var(--gold); font-family: 'Fredoka One', cursive; font-size: 1.2em; animation: pulse 1s ease-in-out infinite; margin-bottom: 8px; }
+    .unlock-banner { color: var(--green); font-family: 'Fredoka One', cursive; font-size: 1.15em; margin-bottom: 12px; animation: fadeIn 0.6s ease; }
+
+    /* ---- LEVEL SELECT ---- */
+    .level-select { background: var(--card); border-radius: 24px; padding: 40px 28px; box-shadow: var(--shadow); text-align: center; }
+    .level-select h2 { font-size: 1.8em; color: var(--purple); margin-bottom: 6px; }
+    .level-select .subtitle { color: #888; font-weight: 700; margin-bottom: 24px; }
+    .level-cards { display: flex; flex-direction: column; gap: 14px; }
+    .level-card {
+      display: flex; align-items: center; gap: 16px; padding: 18px 20px;
+      border: 3px solid #e9ecef; border-radius: 18px; background: white;
+      cursor: pointer; transition: all 0.2s; text-align: left;
+    }
+    .level-card:hover:not(.locked) { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+    .level-card.locked { opacity: 0.5; cursor: not-allowed; }
+    .level-card .level-icon { font-size: 2.2em; min-width: 48px; text-align: center; }
+    .level-card .level-info { flex: 1; }
+    .level-card .level-name { font-family: 'Fredoka One', cursive; font-size: 1.15em; color: var(--dark); }
+    .level-card .level-desc { color: #888; font-size: 0.85em; font-weight: 600; margin-top: 2px; }
+    .level-card .level-best { color: var(--orange); font-weight: 800; font-size: 0.8em; margin-top: 4px; }
+    .level-card .level-lock { font-size: 1.5em; }
+    .level-card-l1 { border-color: #06d6a040; }
+    .level-card-l1:hover:not(.locked) { border-color: var(--green); background: #06d6a008; }
+    .level-card-l2 { border-color: #4361ee40; }
+    .level-card-l2:hover:not(.locked) { border-color: var(--blue); background: #4361ee08; }
+    .level-card-l3 { border-color: #7209b740; }
+    .level-card-l3:hover:not(.locked) { border-color: var(--purple); background: #7209b708; }
+    .btn-back {
+      margin-top: 20px; background: none; border: 2px solid #ccc; color: #888; padding: 10px 28px;
+      font-family: 'Fredoka One', cursive; font-size: 1em; border-radius: 50px; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-back:hover { border-color: var(--purple); color: var(--purple); }
+
+    /* ---- LEVEL BADGE (in-game top bar) ---- */
+    .level-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 12px; font-weight: 800; font-size: 0.75em;
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .level-badge.l1 { background: #06d6a020; color: #05a880; }
+    .level-badge.l2 { background: #4361ee20; color: var(--blue); }
+    .level-badge.l3 { background: #7209b720; color: var(--purple); }
+
+    /* ---- MATH TRICK CALLOUT (L2) ---- */
+    .math-trick {
+      margin-top: 10px; padding: 12px; background: linear-gradient(135deg, #fff9e6, #fff3cc);
+      border: 2px solid var(--gold); border-radius: 12px; font-size: 0.95em; color: #555; line-height: 1.5; display: none;
+    }
+    .math-trick.show { display: block; animation: slideUp 0.3s ease; }
+    .math-trick strong { color: var(--orange); }
+
+    /* ---- TYPE-IN INPUT (L3) ---- */
+    .answer-input-wrap { display: none; text-align: center; }
+    .answer-input-wrap.show { display: block; }
+    .answer-input {
+      width: 100%; max-width: 260px; padding: 16px 20px; font-size: 1.4em; font-weight: 700;
+      font-family: 'Nunito', sans-serif; border: 3px solid #e9ecef; border-radius: 16px;
+      text-align: center; color: var(--dark); outline: none; transition: border-color 0.2s;
+    }
+    .answer-input:focus { border-color: var(--blue); }
+    .answer-input.wrong-shake { animation: shake 0.4s ease; border-color: var(--red); }
+    .answer-input.correct-glow { border-color: var(--green); background: #06d6a010; }
+    .btn-submit-answer {
+      margin-top: 12px; background: linear-gradient(135deg, var(--blue), var(--purple));
+      color: white; border: none; padding: 12px 36px; font-size: 1.05em;
+      font-family: 'Fredoka One', cursive; border-radius: 50px; cursor: pointer;
+      transition: transform 0.2s; box-shadow: 0 4px 12px rgba(67,97,238,0.3);
+    }
+    .btn-submit-answer:hover { transform: scale(1.05); }
+    .try-nudge { color: var(--orange); font-weight: 700; margin-top: 8px; font-size: 0.95em; animation: fadeIn 0.3s ease; }
+
+    /* ---- GEO MASTER FACT SCREEN (L3 midpoint) ---- */
+    .geo-fact-screen {
+      background: var(--card); border-radius: 24px; padding: 40px 32px; box-shadow: var(--shadow); text-align: center;
+    }
+    .geo-fact-screen .fact-icon { font-size: 64px; display: block; margin-bottom: 12px; animation: bounce 2s ease-in-out infinite; }
+    .geo-fact-screen h2 { font-size: 1.8em; color: var(--purple); margin-bottom: 16px; }
+    .geo-fact-screen .fact-text {
+      font-size: 1.1em; color: #555; line-height: 1.7; margin-bottom: 8px;
+      padding: 20px; background: linear-gradient(135deg, #f0e6ff, #ffe6f0);
+      border-radius: 16px; font-weight: 600;
+    }
+    .geo-fact-screen .fact-subtitle { color: #999; font-weight: 700; font-size: 0.95em; margin-bottom: 24px; }
+    .btn-keep-going {
+      background: linear-gradient(135deg, var(--green), #00b894);
+      color: white; border: none; padding: 16px 42px; font-size: 1.2em;
+      font-family: 'Fredoka One', cursive; border-radius: 50px; cursor: pointer;
+      transition: transform 0.2s; box-shadow: 0 4px 15px rgba(6,214,160,0.4);
+    }
+    .btn-keep-going:hover { transform: scale(1.05); }
 
     /* ---- CONFETTI ---- */
     #confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; overflow: hidden; }
@@ -230,12 +318,55 @@
     <p>Geography + Math = Awesome!</p>
     <p style="color:#999; font-size:0.9em; margin-bottom: 4px;">10 questions per round</p>
     <div id="best-score" class="best-score"></div>
-    <button class="btn-start" onclick="startGame()">Let's Go!</button>
+    <button class="btn-start" onclick="showLevelSelect()">Let's Go!</button>
+  </div>
+
+  <div id="level-select-screen" class="screen level-select">
+    <h2>Choose Your Level</h2>
+    <p class="subtitle">How brave are you, explorer?</p>
+    <div class="level-cards">
+      <div class="level-card level-card-l1" onclick="startGame(1)">
+        <span class="level-icon">🌱</span>
+        <div class="level-info">
+          <div class="level-name">Junior Explorer</div>
+          <div class="level-desc">Multiple choice · Times tables math</div>
+          <div class="level-best" id="best-l1"></div>
+        </div>
+      </div>
+      <div class="level-card level-card-l2 locked" id="card-l2" onclick="startGame(2)">
+        <span class="level-icon">🧠</span>
+        <div class="level-info">
+          <div class="level-name">Math Trickster</div>
+          <div class="level-desc">Mental math tricks · Looks hard, but isn't!</div>
+          <div class="level-best" id="best-l2"></div>
+        </div>
+        <span class="level-lock" id="lock-l2">🔒</span>
+      </div>
+      <div class="level-card level-card-l3 locked" id="card-l3" onclick="startGame(3)">
+        <span class="level-icon">⭐</span>
+        <div class="level-info">
+          <div class="level-name">Geo Master</div>
+          <div class="level-desc">Type your answers · No multiple choice!</div>
+          <div class="level-best" id="best-l3"></div>
+        </div>
+        <span class="level-lock" id="lock-l3">🔒</span>
+      </div>
+    </div>
+    <button class="btn-back" onclick="showScreen('welcome-screen')">← Back</button>
+  </div>
+
+  <div id="geo-fact-screen" class="screen geo-fact-screen">
+    <span class="fact-icon">🌍</span>
+    <h2>Geo Master Fact!</h2>
+    <div class="fact-text" id="geo-fact-text"></div>
+    <p class="fact-subtitle">You're halfway there — 5 more questions to go!</p>
+    <button class="btn-keep-going" onclick="continueAfterGeoFact()">Keep Going! →</button>
   </div>
 
   <div id="game-screen" class="screen game-screen">
     <div class="top-bar">
       <span class="progress-text" id="progress-text">Q 1/10</span>
+      <span class="level-badge" id="level-badge"></span>
       <span class="score-display" id="score-display">Score: 0</span>
       <span class="streak-display" id="streak-display"></span>
     </div>
@@ -255,6 +386,12 @@
     </div>
     <div class="question-text" id="q-text"></div>
     <div class="options-grid" id="options-grid"></div>
+    <div class="answer-input-wrap" id="answer-input-wrap">
+      <input type="text" class="answer-input" id="answer-input" placeholder="Type your answer..." autocomplete="off">
+      <div id="try-nudge"></div>
+      <button class="btn-submit-answer" id="btn-submit" onclick="submitL3Answer()">Submit</button>
+    </div>
+    <div class="math-trick" id="math-trick"></div>
     <div class="feedback" id="feedback">
       <div class="feedback-header" id="feedback-header"></div>
       <div id="feedback-points"></div>
@@ -270,11 +407,12 @@
     <div class="results-label">points</div>
     <div class="stars-display" id="stars-display"></div>
     <div id="new-best"></div>
+    <div id="unlock-banner"></div>
     <div class="results-stats">
       <div class="stat-item"><div class="stat-value" id="stat-correct">0</div><div class="stat-label">Correct</div></div>
       <div class="stat-item"><div class="stat-value" id="stat-streak">0</div><div class="stat-label">Best Streak</div></div>
     </div>
-    <button class="btn-play-again" onclick="startGame()">Play Again!</button>
+    <button class="btn-play-again" onclick="showLevelSelect()">Play Again!</button>
   </div>
 </div>
 
@@ -341,8 +479,8 @@ const questions = [
     options: ["2","3","4","5"], correct: 1, emoji: "🏜️", category: "Africa",
     funFact: "The Sahara is almost as big as the entire United States! And it's not all sand — much of it is rocky.",
     lat: 23.4, lon: 3, mapLabel: "Sahara", h: null },
-  { question: "Kenya is home to 4 of Africa's Big Five animals. If a safari jeep spots 9 of each type, how many animals total?",
-    options: ["27","32","36","45"], correct: 2, emoji: "🦁", category: "Kenya",
+  { question: "Kenya is home to all 5 of Africa's Big Five animals. If a safari jeep spots 9 of each type, how many animals total?",
+    options: ["27","36","40","45"], correct: 3, emoji: "🦁", category: "Kenya",
     funFact: "The Big Five are lion, elephant, buffalo, leopard, and rhino. Kenya's Maasai Mara is one of the best places to see them!",
     lat: -0.02, lon: 37.9, mapLabel: "Kenya", h: ["404"] },
   { question: "Morocco has 9 UNESCO sites. If a family spends 3 days at each, how many days touring UNESCO sites?",
@@ -447,7 +585,7 @@ const questions = [
     lat: 39.1, lon: 21.8, mapLabel: "Greece", h: ["300"] },
   { question: "Iceland has 30 active volcanoes. If scientists study 5 each year, how many years to study them all?",
     options: ["5","6","7","8"], correct: 1, emoji: "🇮🇸", category: "Iceland",
-    funFact: "Despite its name, Iceland is actually very green! And Greenland is actually very icy!",
+    funFact: "Despite its icy-sounding name, Iceland is actually quite green and temperate! Greenland, despite its green-sounding name, is mostly covered in ice.",
     lat: 64.1, lon: -18, mapLabel: "Iceland", h: ["352"] },
   { question: "Spain has 44 UNESCO World Heritage Sites. If a family visits 4 sites per trip, how many trips do they need for 12 sites?",
     options: ["2","3","4","5"], correct: 1, emoji: "🇪🇸", category: "Spain",
@@ -515,7 +653,7 @@ const questions = [
     lat: 39.4, lon: -8.2, mapLabel: "Portugal", h: ["620"] },
   { question: "Ireland is known as the Emerald Isle. If 108 sheep farms are in 9 counties equally, how many per county?",
     options: ["10","11","12","14"], correct: 2, emoji: "🇮🇪", category: "Ireland",
-    funFact: "Ireland has more sheep than people — about 5 million sheep vs 5 million humans!",
+    funFact: "Ireland is nicknamed the Emerald Isle because its mild, rainy climate keeps the grass incredibly green almost year-round!",
     lat: 53.1, lon: -7.7, mapLabel: "Ireland", h: ["372"] },
 
   // ======== NORTH AMERICA ========
@@ -657,7 +795,7 @@ const questions = [
     lat: -40.9, lon: 174.9, mapLabel: "New Zealand", h: ["554"] },
   { question: "The Great Barrier Reef has about 3,000 individual reefs. If a diver visits 6 reefs per day for 7 days, how many reefs?",
     options: ["36","42","48","54"], correct: 1, emoji: "🐠", category: "Australia",
-    funFact: "The Great Barrier Reef is so large it can be seen from space! It's home to over 1,500 species of fish.",
+    funFact: "The Great Barrier Reef is the world's largest living structure and is home to over 1,500 species of fish!",
     lat: -18.3, lon: 147.7, mapLabel: "Barrier Reef", h: ["36"] },
   { question: "Fiji is made up of 333 islands! If 9 friends each visit a different set of 4 islands, how many islands do they visit?",
     options: ["27","32","36","40"], correct: 2, emoji: "🏝️", category: "Fiji",
@@ -824,7 +962,7 @@ const bonusData = [
   {q:"What is the world's largest folk festival?",a:"Oktoberfest in Germany",w:["Carnival in Brazil","Mardi Gras in the USA","Holi in India"]},
   {q:"How big is Russia?",a:"Over 17 million square km",w:["Over 7 million sq km","Over 27 million sq km","Over 12 million sq km"]},
   {q:"Portuguese explorers were the first Europeans to reach where?",a:"Japan",w:["China","Australia","America"]},
-  {q:"What's surprising about sheep in Ireland?",a:"There are more sheep than people",w:["No sheep live there","All sheep are black","Sheep outnumber cows 100 to 1"]},
+  {q:"Why is Ireland nicknamed the Emerald Isle?",a:"Its rainy climate keeps the grass very green",w:["It has many emerald mines","The sea around it looks green","It was named after an Irish queen"]},
   {q:"How many time zones does the USA span?",a:"6",w:["4","3","8"]},
   {q:"What makes Canada special regarding lakes?",a:"More lakes than all other countries combined",w:["The deepest lake in the world","The largest lake in the world","No natural lakes at all"]},
   {q:"Who invented chocolate?",a:"The ancient Aztecs of Mexico",w:["The Swiss","The Belgians","The French"]},
@@ -884,6 +1022,188 @@ const bonusData = [
   {q:"Which is technically the largest desert on Earth?",a:"Antarctica",w:["The Sahara","The Gobi","The Arctic"]},
   {q:"What percentage of the world's active volcanoes are in the Ring of Fire?",a:"75%",w:["25%","50%","90%"]},
   {q:"How much of Earth's land do rainforests now cover?",a:"6%",w:["14%","20%","2%"]},
+];
+
+// ==================== LEVEL 2 QUESTIONS — MATH TRICKSTER ====================
+const questionsL2 = [
+  { question: "Japan's bullet trains carry 9 million passengers each year. If you multiply 9 × 14 trains per route, how many total trains?",
+    options: ["116","126","134","136"], correct: 1, emoji: "🚄", category: "Japan",
+    funFact: "Japan's Shinkansen bullet trains can reach speeds of 320 km/h!",
+    trick: "💡 <strong>× 9 Trick:</strong> Instead of 9 × 14, think <em>10 × 14 = 140</em>, then subtract one group of 14. <em>140 − 14 = 126!</em>",
+    lat: 36.2, lon: 138, mapLabel: "Japan", h: ["392"] },
+  { question: "The Amazon River has 11 major tributaries. If each tributary has 13 research stations, how many stations total?",
+    options: ["133","140","143","153"], correct: 2, emoji: "🌳", category: "Brazil",
+    funFact: "The Amazon River discharges more water than the next 7 largest rivers combined!",
+    trick: "💡 <strong>× 11 Trick:</strong> Instead of 11 × 13, think <em>10 × 13 = 130</em>, then add one more group of 13. <em>130 + 13 = 143!</em>",
+    lat: -3.4, lon: -65, mapLabel: "Amazon", h: ["76"] },
+  { question: "India has 5 major river systems. If each system has 36 dams along it, how many dams total?",
+    options: ["170","175","180","185"], correct: 2, emoji: "🇮🇳", category: "India",
+    funFact: "India has over 5,000 large dams, more than almost any other country!",
+    trick: "💡 <strong>× 5 Trick:</strong> Instead of 5 × 36, halve 36 to get 18, then multiply by 10. <em>18 × 10 = 180!</em>",
+    lat: 20.6, lon: 79, mapLabel: "India", h: ["356"] },
+  { question: "Norway has 99 species of freshwater fish. If 6 aquariums each display all species, how many fish displays total?",
+    options: ["584","590","594","600"], correct: 2, emoji: "🐟", category: "Norway",
+    funFact: "Norway's coastline, including all the fjords, is over 100,000 km long!",
+    trick: "💡 <strong>× 99 Trick:</strong> Instead of 99 × 6, think <em>100 × 6 = 600</em>, then subtract one group of 6. <em>600 − 6 = 594!</em>",
+    lat: 60.5, lon: 8.5, mapLabel: "Norway", h: ["578"] },
+  { question: "Mexico has 25 states with Pacific coastline access. If each coastal state has 4 major ports, how many ports total?",
+    options: ["96","100","104","108"], correct: 1, emoji: "🇲🇽", category: "Mexico",
+    funFact: "Mexico's Pacific coast stretches over 7,000 km and is famous for whale watching!",
+    trick: "💡 <strong>× 25 Trick:</strong> Think of quarters! 25 × 4 = 100 every time. So <em>25 × 4 = 100!</em> Each group of 4 is worth 100.",
+    lat: 23.6, lon: -102.6, mapLabel: "Mexico", h: ["484"] },
+  { question: "Egypt has 29 governorates (regions). If each governorate has 4 major historical sites, how many sites total?",
+    options: ["112","116","120","124"], correct: 1, emoji: "🇪🇬", category: "Egypt",
+    funFact: "Egypt has so many ancient ruins that archaeologists believe most are still buried under the sand!",
+    trick: "💡 <strong>Near-Round-Number Trick:</strong> Instead of 29 × 4, think <em>30 × 4 = 120</em>, then subtract one group of 4. <em>120 − 4 = 116!</em>",
+    lat: 29.9, lon: 31.1, mapLabel: "Egypt", h: ["818"] },
+  { question: "The Andes cross 9 countries. If each country has 17 volcanoes in the range, how many volcanoes total?",
+    options: ["143","148","153","163"], correct: 2, emoji: "🌋", category: "South America",
+    funFact: "The Andes contain more than 50 active volcanoes, making it one of the most volcanic regions on Earth!",
+    trick: "💡 <strong>× 9 Trick:</strong> Instead of 9 × 17, think <em>10 × 17 = 170</em>, then subtract 17. <em>170 − 17 = 153!</em>",
+    lat: -15, lon: -70, mapLabel: "Andes", h: null },
+  { question: "Australia has 11 World Heritage wilderness areas. If each area has 15 ranger stations, how many stations?",
+    options: ["155","160","165","175"], correct: 2, emoji: "🇦🇺", category: "Australia",
+    funFact: "Australia's wilderness areas include ancient rainforests that are over 100 million years old!",
+    trick: "💡 <strong>× 11 Trick:</strong> Instead of 11 × 15, think <em>10 × 15 = 150</em>, then add one more 15. <em>150 + 15 = 165!</em>",
+    lat: -25.3, lon: 133.8, mapLabel: "Australia", h: ["36"] },
+  { question: "Canada has 5 Great Lakes on its border. If 48 research boats operate across them, how many boats total?",
+    options: ["230","235","240","245"], correct: 2, emoji: "🇨🇦", category: "Canada",
+    funFact: "The Great Lakes contain about 21% of the world's surface fresh water!",
+    trick: "💡 <strong>× 5 Trick:</strong> Instead of 5 × 48, halve 48 to get 24, then multiply by 10. <em>24 × 10 = 240!</em>",
+    lat: 46, lon: -83, mapLabel: "Great Lakes", h: ["124","840"] },
+  { question: "Greece has 99 inhabited islands with lighthouses. If each lighthouse has 3 keepers, how many keepers total?",
+    options: ["287","293","297","300"], correct: 2, emoji: "🇬🇷", category: "Greece",
+    funFact: "Greece has more archaeological museums than any other country in the world!",
+    trick: "💡 <strong>× 99 Trick:</strong> Instead of 99 × 3, think <em>100 × 3 = 300</em>, then subtract 3. <em>300 − 3 = 297!</em>",
+    lat: 39.1, lon: 21.8, mapLabel: "Greece", h: ["300"] },
+  { question: "Kenya's Maasai Mara has 25 licensed safari camps. If each camp runs 8 game drives per day, how many drives daily?",
+    options: ["190","195","200","210"], correct: 2, emoji: "🦁", category: "Kenya",
+    funFact: "The Maasai Mara is named after the Maasai people and the Mara River that runs through it!",
+    trick: "💡 <strong>× 25 Trick:</strong> Think in quarters! 25 × 8 = two groups of (25 × 4 = 100). <em>100 + 100 = 200!</em>",
+    lat: -1.5, lon: 35, mapLabel: "Maasai Mara", h: ["404"] },
+  { question: "China has 9 UNESCO Geoparks in one province. If each has 22 hiking trails, how many trails in that province?",
+    options: ["188","192","198","202"], correct: 2, emoji: "🇨🇳", category: "China",
+    funFact: "China has the most UNESCO Global Geoparks of any country — over 40!",
+    trick: "💡 <strong>× 9 Trick:</strong> Instead of 9 × 22, think <em>10 × 22 = 220</em>, then subtract 22. <em>220 − 22 = 198!</em>",
+    lat: 35, lon: 103, mapLabel: "China", h: ["156"] },
+  { question: "The UK has 49 national nature reserves in Scotland. If each reserve tracks 4 endangered species, how many total?",
+    options: ["192","196","200","204"], correct: 1, emoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", category: "Scotland",
+    funFact: "Scotland is home to the Scottish wildcat, one of the UK's rarest mammals!",
+    trick: "💡 <strong>Near-Round-Number Trick:</strong> Instead of 49 × 4, think <em>50 × 4 = 200</em>, then subtract one group of 4. <em>200 − 4 = 196!</em>",
+    lat: 57.5, lon: -5, mapLabel: "Scotland", h: ["826"] },
+  { question: "Thailand has 5 regions. If each region has 54 Buddhist temples, how many temples total?",
+    options: ["260","265","270","275"], correct: 2, emoji: "🇹🇭", category: "Thailand",
+    funFact: "Thailand has over 40,000 Buddhist temples — more per capita than almost any country!",
+    trick: "💡 <strong>× 5 Trick:</strong> Instead of 5 × 54, halve 54 to get 27, then multiply by 10. <em>27 × 10 = 270!</em>",
+    lat: 15.9, lon: 101, mapLabel: "Thailand", h: ["764"] },
+  { question: "Peru has 11 regions in the Andes. If each region exports 16 types of potatoes, how many types total?",
+    options: ["166","170","176","186"], correct: 2, emoji: "🇵🇪", category: "Peru",
+    funFact: "Peru is the birthplace of the potato — over 3,000 varieties grow there!",
+    trick: "💡 <strong>× 11 Trick:</strong> Instead of 11 × 16, think <em>10 × 16 = 160</em>, then add one more 16. <em>160 + 16 = 176!</em>",
+    lat: -13.2, lon: -72.5, mapLabel: "Peru", h: ["604"] },
+  { question: "South Africa has 9 provinces. If each province has 19 nature reserves, how many reserves total?",
+    options: ["161","167","171","179"], correct: 2, emoji: "🇿🇦", category: "South Africa",
+    funFact: "South Africa has the third-highest level of biodiversity in the world!",
+    trick: "💡 <strong>× 9 Trick:</strong> Instead of 9 × 19, think <em>10 × 19 = 190</em>, then subtract 19. <em>190 − 19 = 171!</em>",
+    lat: -30, lon: 25, mapLabel: "South Africa", h: ["710"] },
+  { question: "Iceland has 25 active volcanic systems. If scientists take 4 measurements per system each day, how many measurements daily?",
+    options: ["96","100","104","108"], correct: 1, emoji: "🇮🇸", category: "Iceland",
+    funFact: "Iceland sits on the Mid-Atlantic Ridge where two tectonic plates are pulling apart!",
+    trick: "💡 <strong>× 25 Trick:</strong> Think in quarters! 25 × 4 = 100 — exactly one hundred! Quick as that!",
+    lat: 64.1, lon: -18, mapLabel: "Iceland", h: ["352"] },
+  { question: "Tanzania has 99 protected wildlife areas. If each area has 5 anti-poaching patrols, how many patrols total?",
+    options: ["485","490","495","500"], correct: 2, emoji: "🇹🇿", category: "Tanzania",
+    funFact: "Tanzania's Ngorongoro Crater is the largest unbroken volcanic caldera in the world!",
+    trick: "💡 <strong>× 99 Trick:</strong> Instead of 99 × 5, think <em>100 × 5 = 500</em>, then subtract 5. <em>500 − 5 = 495!</em>",
+    lat: -6.4, lon: 34.9, mapLabel: "Tanzania", h: ["834"] },
+];
+
+// ==================== LEVEL 3 QUESTIONS — GEO MASTER ====================
+const questionsL3 = [
+  { question: "The Nile River flows through 11 countries. If each country has 24 river monitoring stations, how many stations total?",
+    answer: "264", emoji: "🏞️", category: "Africa",
+    funFact: "The Nile has been the lifeline of Egyptian civilization for over 5,000 years!",
+    lat: 15, lon: 30, mapLabel: "Nile River", h: ["818","736","800"] },
+  { question: "Japan's railway system carries 27 million passengers per day. If that's split across 9 major companies, how many per company?",
+    answer: "3000000", emoji: "🚄", category: "Japan",
+    funFact: "Japanese trains are famous for being almost perfectly on time — average delay is under 1 minute!",
+    lat: 36.2, lon: 138, mapLabel: "Japan", h: ["392"] },
+  { question: "Brazil's Amazon Rainforest covers 5,500,000 square km. If 12 research zones each cover 125 sq km, what's the total area researched?",
+    answer: "1500", emoji: "🌳", category: "Brazil",
+    funFact: "The Amazon produces about 6% of the world's oxygen and is home to 10% of all species on Earth!",
+    lat: -3.4, lon: -65, mapLabel: "Amazon", h: ["76"] },
+  { question: "The Great Wall of China used 3 billion bricks. If 15 factories each produced 200 bricks per day, how many bricks per day total?",
+    answer: "3000", emoji: "🇨🇳", category: "China",
+    funFact: "The Great Wall took over 2,000 years to build, with different dynasties adding sections!",
+    lat: 40.4, lon: 116.6, mapLabel: "Great Wall", h: ["156"] },
+  { question: "Australia's Great Barrier Reef has 2,900 individual reefs. If scientists survey 145 reefs per month, how many months to survey them all?",
+    answer: "20", emoji: "🐠", category: "Australia",
+    funFact: "The Great Barrier Reef is made up of nearly 3,000 individual reef systems and hundreds of islands!",
+    lat: -18.3, lon: 147.7, mapLabel: "Barrier Reef", h: ["36"] },
+  { question: "Russia spans 11 time zones covering 17,098,242 sq km. If you divide Russia into 11 equal zones, about how many million sq km per zone? (Round to nearest whole number)",
+    answer: "2", emoji: "🇷🇺", category: "Russia",
+    funFact: "Russia is so wide that when it's midnight in Kaliningrad, it's already 10 AM in Kamchatka!",
+    lat: 61.5, lon: 105, mapLabel: "Russia", h: ["643"] },
+  { question: "The Sahara Desert is 9,200,000 sq km. If a research team explores 46 sq km per day, how many days for 1,380 sq km?",
+    answer: "30", emoji: "🏜️", category: "Africa",
+    funFact: "The Sahara was once lush and green — cave paintings show hippos and crocodiles living there!",
+    lat: 23.4, lon: 3, mapLabel: "Sahara", h: null },
+  { question: "Canada has 48 national parks covering 340,000 sq km. If each park averages 125,000 visitors per year, and there are 8 parks in the Rockies, how many visitors do the Rocky Mountain parks get?",
+    answer: "1000000", emoji: "🇨🇦", category: "Canada",
+    funFact: "Canada's Banff was the world's third national park, established in 1885!",
+    lat: 51.2, lon: -116.2, mapLabel: "Rockies", h: ["124"] },
+  { question: "The Alps stretch 1,200 km. If a hiker covers 24 km per day, how many days to hike the full length?",
+    answer: "50", emoji: "⛷️", category: "The Alps",
+    funFact: "The Alps are home to over 13,000 plant species and 30,000 animal species!",
+    lat: 46.5, lon: 10, mapLabel: "The Alps", h: null },
+  { question: "Indonesia has 17,508 islands. If only 6,000 are inhabited, and each inhabited island averages 45 villages, how many villages is that?",
+    answer: "270000", emoji: "🇮🇩", category: "Indonesia",
+    funFact: "Indonesia straddles the Equator and has the second-highest level of biodiversity on the planet!",
+    lat: -2.5, lon: 118, mapLabel: "Indonesia", h: ["360"] },
+  { question: "The Amazon River is 6,400 km long. A boat travels at 32 km per hour. How many hours to travel 1,600 km?",
+    answer: "50", emoji: "🚣", category: "South America",
+    funFact: "The Amazon carries one-fifth of all river water on Earth into the Atlantic Ocean!",
+    lat: -3.1, lon: -60, mapLabel: "Amazon River", h: ["76"] },
+  { question: "Antarctica's ice sheet is up to 4,776 meters thick. If it melts at 2 meters per century at current rates, how many centuries for 150 meters to melt?",
+    answer: "75", emoji: "🧊", category: "Antarctica",
+    funFact: "If all of Antarctica's ice melted, global sea levels would rise by about 58 meters!",
+    lat: -82, lon: 0, mapLabel: "Antarctica", h: ["10"] },
+  { question: "India has 1,400,000,000 people across 28 states. If 7 states account for 56% of the population, what is 56% of 1,400 (in millions)?",
+    answer: "784", emoji: "🇮🇳", category: "India",
+    funFact: "India became the world's most populous country in 2023, surpassing China!",
+    lat: 20.6, lon: 79, mapLabel: "India", h: ["356"] },
+  { question: "The Pacific Ocean covers 165,250,000 sq km. If the Atlantic Ocean is 106,460,000 sq km, what's the difference in millions of sq km? (Round to nearest whole number)",
+    answer: "59", emoji: "🌊", category: "Pacific Ocean",
+    funFact: "The Pacific Ocean's name comes from 'Mar Pacífico' meaning 'peaceful sea,' named by Ferdinand Magellan!",
+    lat: 0, lon: -160, mapLabel: "Pacific Ocean", h: null },
+  { question: "The Trans-Siberian Railway is 9,289 km long. If a train averages 62 km per hour for a 6-day trip, how many hours is the trip? (Round to nearest whole number)",
+    answer: "150", emoji: "🚂", category: "Russia",
+    funFact: "A non-stop trip on the Trans-Siberian from Moscow to Vladivostok takes about 6 days and 3 hours!",
+    lat: 55.8, lon: 90, mapLabel: "Siberia", h: ["643"] },
+  { question: "Mount Everest is 8,849 meters tall. K2 is 8,611 meters. What is the height difference in meters?",
+    answer: "238", emoji: "🏔️", category: "Himalayas",
+    funFact: "K2 is considered much more dangerous to climb than Everest — it's called the 'Savage Mountain'!",
+    lat: 35.9, lon: 76.5, mapLabel: "K2", h: ["586"] },
+  { question: "Chile is 4,300 km long. If a bus travels 860 km per day, how many days to drive the full length?",
+    answer: "5", emoji: "🇨🇱", category: "Chile",
+    funFact: "Chile is the longest north-south country in the world, stretching over 38 degrees of latitude!",
+    lat: -35.7, lon: -71.5, mapLabel: "Chile", h: ["152"] },
+  { question: "The Mariana Trench is 10,994 meters deep. If a submarine descends 122 meters per minute, how many minutes to reach 7,320 meters depth?",
+    answer: "60", emoji: "🌊", category: "Pacific Ocean",
+    funFact: "Only three people have ever reached the bottom of the Mariana Trench — it's harder to get to than the Moon!",
+    lat: 11.3, lon: 142.2, mapLabel: "Mariana Trench", h: null },
+];
+
+// ==================== GEO MASTER FACTS (L3 midpoint) ====================
+const geoMasterFacts = [
+  "The Pacific Ocean is larger than all of Earth's land combined — and it's still shrinking by a few centimeters every year.",
+  "There is a place in the ocean called Point Nemo — it's the spot farthest from any land on Earth. The nearest humans are sometimes astronauts on the International Space Station.",
+  "Canada has so many lakes that they contain about 20% of the world's entire supply of fresh surface water.",
+  "The Sahara Desert was green and full of rivers and lakes as recently as 5,000 years ago — people farmed and fished there.",
+  "A day on Venus is longer than a year on Venus — it rotates so slowly that it completes an orbit around the Sun before finishing one spin.",
+  "New Zealand is so isolated that when humans arrived (around 1300 AD), it was the last large landmass on Earth without people.",
+  "The Dead Sea is shrinking by about 1 meter per year — it has lost a third of its size in the last 50 years.",
+  "Russia shares a border with more countries than any other nation on Earth — 14 countries in total.",
 ];
 
 // ==================== MAP SETUP ====================
@@ -973,7 +1293,12 @@ function renderMiniMap(lat, lon, label, highlightIds) {
 }
 
 // ==================== GAME STATE ====================
-let state = { currentQuestions: [], questionIndex: 0, score: 0, streak: 0, bestStreak: 0, correctCount: 0, answered: false, bonusDone1: false, bonusDone2: false, inBonus: false, exitingBonus: false };
+let state = {
+  level: 1, currentQuestions: [], questionIndex: 0, score: 0,
+  streak: 0, bestStreak: 0, correctCount: 0, answered: false,
+  bonusDone1: false, bonusDone2: false, inBonus: false, exitingBonus: false,
+  l3Tries: 0, geoFactsUsed: [], geoFactShown: false
+};
 
 function shuffle(arr) {
   const a = [...arr];
@@ -981,16 +1306,70 @@ function shuffle(arr) {
   return a;
 }
 
-function startGame() {
-  state = { currentQuestions: shuffle(questions).slice(0, 10), questionIndex: 0, score: 0, streak: 0, bestStreak: 0, correctCount: 0, answered: false, bonusDone1: false, bonusDone2: false, inBonus: false, exitingBonus: false };
+function normalizeAnswer(str) {
+  return str.replace(/,/g, '').replace(/\s/g, '').toLowerCase();
+}
+
+// ==================== LEVEL SELECT ====================
+function showLevelSelect() {
+  const l2u = localStorage.getItem('geomath-l2-unlocked') === 'true';
+  const l3u = localStorage.getItem('geomath-l3-unlocked') === 'true';
+
+  const card2 = document.getElementById('card-l2');
+  const card3 = document.getElementById('card-l3');
+  const lock2 = document.getElementById('lock-l2');
+  const lock3 = document.getElementById('lock-l3');
+
+  if (l2u) { card2.classList.remove('locked'); lock2.style.display = 'none'; }
+  else { card2.classList.add('locked'); lock2.style.display = ''; }
+  if (l3u) { card3.classList.remove('locked'); lock3.style.display = 'none'; }
+  else { card3.classList.add('locked'); lock3.style.display = ''; }
+
+  // Show best scores
+  const b1 = localStorage.getItem('geomath-best-l1');
+  const b2 = localStorage.getItem('geomath-best-l2');
+  const b3 = localStorage.getItem('geomath-best-l3');
+  document.getElementById('best-l1').textContent = b1 && parseInt(b1) > 0 ? `Best: ${b1}` : '';
+  document.getElementById('best-l2').textContent = b2 && parseInt(b2) > 0 ? `Best: ${b2}` : '';
+  document.getElementById('best-l3').textContent = b3 && parseInt(b3) > 0 ? `Best: ${b3}` : '';
+
+  showScreen('level-select-screen');
+}
+
+// ==================== START GAME ====================
+function startGame(level) {
+  // Check if locked
+  if (level === 2 && localStorage.getItem('geomath-l2-unlocked') !== 'true') return;
+  if (level === 3 && localStorage.getItem('geomath-l3-unlocked') !== 'true') return;
+
+  const bank = level === 1 ? questions : level === 2 ? questionsL2 : questionsL3;
+
+  state = {
+    level, currentQuestions: shuffle(bank).slice(0, 10), questionIndex: 0,
+    score: 0, streak: 0, bestStreak: 0, correctCount: 0, answered: false,
+    bonusDone1: false, bonusDone2: false, inBonus: false, exitingBonus: false,
+    l3Tries: 0, geoFactsUsed: [], geoFactShown: false
+  };
+
   document.getElementById('game-screen').classList.remove('bonus-active');
+
+  // Set level badge
+  const badge = document.getElementById('level-badge');
+  const levelNames = { 1: '🌱 L1', 2: '🧠 L2', 3: '⭐ L3' };
+  const levelClasses = { 1: 'l1', 2: 'l2', 3: 'l3' };
+  badge.textContent = levelNames[level];
+  badge.className = `level-badge ${levelClasses[level]}`;
+
   showScreen('game-screen');
   renderQuestion();
 }
 
+// ==================== RENDER QUESTION ====================
 function renderQuestion() {
   const q = state.currentQuestions[state.questionIndex];
   state.answered = false;
+  state.l3Tries = 0;
+
   document.getElementById('progress-text').textContent = `Q ${state.questionIndex + 1}/10`;
   document.getElementById('score-display').textContent = `Score: ${state.score}`;
   document.getElementById('progress-fill').style.width = `${(state.questionIndex / 10) * 100}%`;
@@ -1000,20 +1379,42 @@ function renderQuestion() {
   document.getElementById('q-text').textContent = q.question;
   renderMiniMap(q.lat, q.lon, q.mapLabel, q.h);
 
-  const optClasses = ['opt-a','opt-b','opt-c','opt-d'];
-  const grid = document.getElementById('options-grid');
-  grid.innerHTML = '';
-  q.options.forEach((opt, i) => {
-    const btn = document.createElement('button');
-    btn.className = `option-btn ${optClasses[i]}`;
-    btn.textContent = opt;
-    btn.onclick = () => selectAnswer(i);
-    grid.appendChild(btn);
-  });
+  // Hide extras
+  document.getElementById('math-trick').className = 'math-trick';
   document.getElementById('feedback').className = 'feedback';
   document.getElementById('feedback').style.display = 'none';
+  document.getElementById('try-nudge').textContent = '';
+
+  if (state.level === 3) {
+    // Type-in mode
+    document.getElementById('options-grid').style.display = 'none';
+    const wrap = document.getElementById('answer-input-wrap');
+    wrap.className = 'answer-input-wrap show';
+    const input = document.getElementById('answer-input');
+    input.value = '';
+    input.className = 'answer-input';
+    input.disabled = false;
+    document.getElementById('btn-submit').style.display = '';
+    setTimeout(() => input.focus(), 100);
+  } else {
+    // Multiple choice mode
+    document.getElementById('options-grid').style.display = '';
+    document.getElementById('answer-input-wrap').className = 'answer-input-wrap';
+
+    const optClasses = ['opt-a','opt-b','opt-c','opt-d'];
+    const grid = document.getElementById('options-grid');
+    grid.innerHTML = '';
+    q.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = `option-btn ${optClasses[i]}`;
+      btn.textContent = opt;
+      btn.onclick = () => selectAnswer(i);
+      grid.appendChild(btn);
+    });
+  }
 }
 
+// ==================== SELECT ANSWER (L1 + L2) ====================
 function selectAnswer(index) {
   if (state.answered) return;
   state.answered = true;
@@ -1037,6 +1438,7 @@ function selectAnswer(index) {
   } else { state.streak = 0; }
   document.getElementById('score-display').textContent = `Score: ${state.score}`;
   updateStreakDisplay();
+
   const feedback = document.getElementById('feedback');
   feedback.style.display = 'block';
   feedback.className = `feedback show ${isCorrect ? 'correct-feedback' : 'wrong-feedback'}`;
@@ -1052,16 +1454,94 @@ function selectAnswer(index) {
     pointsDiv.innerHTML = `<span style="color:#888;">The answer was: <strong>${q.options[q.correct]}</strong></span>`;
   }
   document.getElementById('fun-fact').innerHTML = `<strong>Fun Fact:</strong> ${q.funFact}`;
+
+  // L2: show math trick
+  if (state.level === 2 && q.trick) {
+    const trickEl = document.getElementById('math-trick');
+    trickEl.innerHTML = q.trick;
+    trickEl.className = 'math-trick show';
+  }
+
   document.getElementById('btn-next').textContent = state.questionIndex === 9 ? 'See Results!' : 'Next Question';
 }
 
+// ==================== SUBMIT L3 ANSWER (type-in) ====================
+function submitL3Answer() {
+  if (state.answered) return;
+  const q = state.currentQuestions[state.questionIndex];
+  const input = document.getElementById('answer-input');
+  const userVal = normalizeAnswer(input.value);
+  const correctVal = normalizeAnswer(q.answer);
+
+  if (!userVal) return; // empty
+
+  state.l3Tries++;
+  const isCorrect = userVal === correctVal;
+
+  if (isCorrect) {
+    state.answered = true;
+    state.correctCount++; state.streak++;
+    if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+    let pointsEarned = 10;
+    let streakBonus = 0;
+    if (state.l3Tries === 1) { pointsEarned = 15; } // bonus for first try
+    if (state.streak >= 3) { streakBonus = 5; pointsEarned += streakBonus; }
+    state.score += pointsEarned;
+    showFloatingScore(pointsEarned);
+    if (state.streak >= 3) spawnConfetti(15);
+    else spawnConfetti(8);
+    input.className = 'answer-input correct-glow';
+    input.disabled = true;
+    document.getElementById('btn-submit').style.display = 'none';
+    document.getElementById('score-display').textContent = `Score: ${state.score}`;
+    updateStreakDisplay();
+
+    const feedback = document.getElementById('feedback');
+    feedback.style.display = 'block';
+    feedback.className = 'feedback show correct-feedback';
+    document.getElementById('feedback-header').textContent = state.l3Tries === 1
+      ? ['First try!','Perfect!','Brilliant!'][Math.floor(Math.random() * 3)]
+      : ['Got it!','Nice recovery!'][Math.floor(Math.random() * 2)];
+    let pText = `+${pointsEarned} points`;
+    if (streakBonus > 0) pText += ` (includes +${streakBonus} streak bonus!)`;
+    document.getElementById('feedback-points').innerHTML = `<span class="points">${pText}</span>`;
+    document.getElementById('fun-fact').innerHTML = `<strong>Fun Fact:</strong> ${q.funFact}`;
+    document.getElementById('btn-next').textContent = state.questionIndex === 9 ? 'See Results!' : 'Next Question';
+  } else if (state.l3Tries >= 2) {
+    // Second wrong try — reveal answer
+    state.answered = true;
+    state.streak = 0;
+    input.className = 'answer-input wrong-shake';
+    input.disabled = true;
+    document.getElementById('btn-submit').style.display = 'none';
+    document.getElementById('try-nudge').textContent = '';
+    document.getElementById('score-display').textContent = `Score: ${state.score}`;
+    updateStreakDisplay();
+
+    const feedback = document.getElementById('feedback');
+    feedback.style.display = 'block';
+    feedback.className = 'feedback show wrong-feedback';
+    document.getElementById('feedback-header').textContent = 'Not this time!';
+    document.getElementById('feedback-points').innerHTML = `<span style="color:#888;">The answer was: <strong>${q.answer}</strong></span>`;
+    document.getElementById('fun-fact').innerHTML = `<strong>Fun Fact:</strong> ${q.funFact}`;
+    document.getElementById('btn-next').textContent = state.questionIndex === 9 ? 'See Results!' : 'Next Question';
+  } else {
+    // First wrong try — nudge
+    input.className = 'answer-input wrong-shake';
+    setTimeout(() => { input.className = 'answer-input'; }, 400);
+    document.getElementById('try-nudge').textContent = 'Not quite — try again! You have 1 more try.';
+    input.value = '';
+    input.focus();
+  }
+}
+
+// ==================== NEXT QUESTION ====================
 function nextQuestion() {
-  // If exiting bonus, go back to normal flow
+  // If exiting bonus (L1 only), go back to normal flow
   if (state.exitingBonus) {
     state.exitingBonus = false;
     state.inBonus = false;
     document.getElementById('game-screen').classList.remove('bonus-active');
-    // If we were at Q10 bonus, go to results
     if (state.questionIndex >= 10) { showResults(); return; }
     renderQuestion();
     return;
@@ -1069,15 +1549,24 @@ function nextQuestion() {
 
   state.questionIndex++;
 
-  // Check for bonus round triggers: after Q5 and after Q10
-  if (state.questionIndex === 5 && !state.bonusDone1) {
-    state.bonusDone1 = true;
-    showBonusRound(0, 5);
-    return;
+  // L1: Bonus rounds at Q5 and Q10
+  if (state.level === 1) {
+    if (state.questionIndex === 5 && !state.bonusDone1) {
+      state.bonusDone1 = true;
+      showBonusRound(0, 5);
+      return;
+    }
+    if (state.questionIndex >= 10 && !state.bonusDone2) {
+      state.bonusDone2 = true;
+      showBonusRound(5, 10);
+      return;
+    }
   }
-  if (state.questionIndex >= 10 && !state.bonusDone2) {
-    state.bonusDone2 = true;
-    showBonusRound(5, 10);
+
+  // L3: Geo Master Fact at Q5
+  if (state.level === 3 && state.questionIndex === 5 && !state.geoFactShown) {
+    state.geoFactShown = true;
+    showGeoMasterFact();
     return;
   }
 
@@ -1085,20 +1574,19 @@ function nextQuestion() {
   else renderQuestion();
 }
 
+// ==================== BONUS ROUND (L1 only) ====================
 function showBonusRound(fromIdx, toIdx) {
   state.inBonus = true;
   document.getElementById('game-screen').classList.add('bonus-active');
 
-  // Pick a random question from the range that has bonus data
   const candidates = [];
   for (let i = fromIdx; i < toIdx && i < state.currentQuestions.length; i++) {
     const origIdx = questions.indexOf(state.currentQuestions[i]);
     if (origIdx >= 0 && bonusData[origIdx]) {
-      candidates.push({ questionObj: state.currentQuestions[i], bonusIdx: origIdx, roundIdx: i });
+      candidates.push({ questionObj: state.currentQuestions[i], bonusIdx: origIdx });
     }
   }
 
-  // Fallback: if no bonus data found, skip bonus
   if (candidates.length === 0) {
     state.exitingBonus = true;
     nextQuestion();
@@ -1109,18 +1597,17 @@ function showBonusRound(fromIdx, toIdx) {
   const bd = bonusData[pick.bonusIdx];
   const origQ = pick.questionObj;
 
-  // Show the original question's location on the map
   renderMiniMap(origQ.lat, origQ.lon, origQ.mapLabel, origQ.h);
 
-  // Build shuffled options
   const allOpts = [bd.a, ...bd.w];
   const correctAnswer = bd.a;
   const shuffled = shuffle(allOpts);
   const correctIdx = shuffled.indexOf(correctAnswer);
 
-  // Update UI
   document.getElementById('progress-text').textContent = 'BONUS';
   document.getElementById('q-text').textContent = bd.q;
+  document.getElementById('options-grid').style.display = '';
+  document.getElementById('answer-input-wrap').className = 'answer-input-wrap';
 
   const optClasses = ['opt-a','opt-b','opt-c','opt-d'];
   const grid = document.getElementById('options-grid');
@@ -1179,12 +1666,31 @@ function handleBonusAnswer(selected, correctIdx, funFact) {
   document.getElementById('btn-next').textContent = state.questionIndex >= 10 ? 'See Results!' : 'Next Question';
 }
 
+// ==================== GEO MASTER FACT (L3 midpoint) ====================
+function showGeoMasterFact() {
+  // Pick a fact not yet used this session
+  let available = geoMasterFacts.filter((_, i) => !state.geoFactsUsed.includes(i));
+  if (available.length === 0) { available = geoMasterFacts; state.geoFactsUsed = []; }
+  const idx = geoMasterFacts.indexOf(available[Math.floor(Math.random() * available.length)]);
+  state.geoFactsUsed.push(idx);
+
+  document.getElementById('geo-fact-text').textContent = geoMasterFacts[idx];
+  showScreen('geo-fact-screen');
+}
+
+function continueAfterGeoFact() {
+  showScreen('game-screen');
+  renderQuestion();
+}
+
+// ==================== SHOW RESULTS ====================
 function showResults() {
   showScreen('results-screen');
   spawnConfetti(40);
   document.getElementById('results-score').textContent = state.score;
   document.getElementById('stat-correct').textContent = `${state.correctCount}/10`;
   document.getElementById('stat-streak').textContent = state.bestStreak;
+
   let stars = 0;
   if (state.score >= 30) stars = 1;
   if (state.score >= 60) stars = 2;
@@ -1194,6 +1700,7 @@ function showResults() {
   const sc = document.getElementById('stars-display'); sc.innerHTML = '';
   for (let i = 0; i < stars; i++) sc.innerHTML += `<span class="star">⭐</span>`;
   for (let i = stars; i < 5; i++) sc.innerHTML += `<span class="star" style="animation-delay:${0.2+i*0.2}s;filter:grayscale(1) opacity(0.3);">⭐</span>`;
+
   const titles = [
     { min: 0, title: 'Explorer', emoji: '🗺️' }, { min: 30, title: 'Adventurer', emoji: '🧭' },
     { min: 60, title: 'Navigator', emoji: '🌟' }, { min: 90, title: 'Geography Whiz', emoji: '🏅' },
@@ -1203,14 +1710,41 @@ function showResults() {
   for (const t of titles) { if (state.score >= t.min) earned = t; }
   if (state.correctCount === 10) earned = { title: 'Perfect Score Legend', emoji: '👑' };
   document.getElementById('results-title').textContent = `${earned.emoji} ${earned.title} ${earned.emoji}`;
-  const best = localStorage.getItem('geomath-best') || 0;
+
+  // Per-level best score
+  const bestKey = `geomath-best-l${state.level}`;
+  const best = parseInt(localStorage.getItem(bestKey)) || 0;
   const newBestEl = document.getElementById('new-best');
-  if (state.score > best) { localStorage.setItem('geomath-best', state.score); newBestEl.innerHTML = '<div class="new-best">New Best Score!</div>'; }
-  else { newBestEl.innerHTML = ''; }
+  if (state.score > best) {
+    localStorage.setItem(bestKey, state.score);
+    newBestEl.innerHTML = '<div class="new-best">New Best Score!</div>';
+  } else {
+    newBestEl.innerHTML = '';
+  }
+
+  // Migrate old best to L1 if needed
+  const oldBest = localStorage.getItem('geomath-best');
+  if (oldBest && !localStorage.getItem('geomath-best-l1')) {
+    localStorage.setItem('geomath-best-l1', oldBest);
+  }
+
+  // Unlock next level
+  const unlockEl = document.getElementById('unlock-banner');
+  unlockEl.innerHTML = '';
+  if (state.level === 1 && localStorage.getItem('geomath-l2-unlocked') !== 'true') {
+    localStorage.setItem('geomath-l2-unlocked', 'true');
+    unlockEl.innerHTML = '<div class="unlock-banner">🎉 You unlocked Math Trickster! 🧠</div>';
+  } else if (state.level === 2 && localStorage.getItem('geomath-l3-unlocked') !== 'true') {
+    localStorage.setItem('geomath-l3-unlocked', 'true');
+    unlockEl.innerHTML = '<div class="unlock-banner">🎉 You unlocked Geo Master! ⭐</div>';
+  }
 }
 
 // ==================== UI HELPERS ====================
-function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
 
 function updateStreakDisplay() {
   const el = document.getElementById('streak-display');
@@ -1242,8 +1776,20 @@ function spawnConfetti(count) {
 
 // ==================== INIT ====================
 (function init() {
-  const best = localStorage.getItem('geomath-best');
+  // Migrate old best score
+  const oldBest = localStorage.getItem('geomath-best');
+  if (oldBest && !localStorage.getItem('geomath-best-l1')) {
+    localStorage.setItem('geomath-best-l1', oldBest);
+  }
+
+  const best = localStorage.getItem('geomath-best-l1') || localStorage.getItem('geomath-best');
   if (best && parseInt(best) > 0) document.getElementById('best-score').textContent = `Best Score: ${best}`;
+
+  // Enter key submits L3 answer
+  document.getElementById('answer-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') submitL3Answer();
+  });
+
   initMap();
 })();
 </script>
