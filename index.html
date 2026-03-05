@@ -281,6 +281,48 @@
     }
     .btn-keep-going:hover { transform: scale(1.05); }
 
+    /* ---- WALL OF FAME ---- */
+    .wall-of-fame { margin-top: 28px; text-align: left; }
+    .wall-of-fame h3 { text-align: center; font-size: 1.3em; color: var(--purple); margin-bottom: 16px; }
+    .wof-sign-form {
+      background: linear-gradient(135deg, #fff9e6, #fff3cc); border: 2px solid var(--gold);
+      border-radius: 16px; padding: 20px; margin-bottom: 20px;
+    }
+    .wof-sign-form label { font-weight: 700; font-size: 0.9em; color: #555; display: block; margin-bottom: 4px; }
+    .wof-sign-form input, .wof-sign-form textarea {
+      width: 100%; padding: 10px 14px; border: 2px solid #e9ecef; border-radius: 10px;
+      font-family: 'Nunito', sans-serif; font-size: 0.95em; font-weight: 600;
+      color: var(--dark); outline: none; transition: border-color 0.2s; margin-bottom: 12px;
+    }
+    .wof-sign-form input:focus, .wof-sign-form textarea:focus { border-color: var(--gold); }
+    .wof-sign-form textarea { resize: none; height: 56px; }
+    .btn-sign {
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      color: white; border: none; padding: 10px 28px; font-size: 1em;
+      font-family: 'Fredoka One', cursive; border-radius: 50px; cursor: pointer;
+      transition: transform 0.2s; box-shadow: 0 3px 10px rgba(247,127,0,0.3); display: block; margin: 0 auto;
+    }
+    .btn-sign:hover { transform: scale(1.05); }
+    .btn-sign:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .wof-signed { text-align: center; color: var(--green); font-weight: 800; font-size: 1em; padding: 16px; animation: fadeIn 0.4s ease; }
+    .wof-entries { max-height: 320px; overflow-y: auto; padding-right: 4px; }
+    .wof-entry {
+      background: white; border: 2px solid #f0f0f0; border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+      animation: fadeIn 0.3s ease;
+    }
+    .wof-entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .wof-name { font-family: 'Fredoka One', cursive; font-size: 1em; color: var(--dark); }
+    .wof-meta { font-size: 0.75em; color: #aaa; font-weight: 700; }
+    .wof-score-tag {
+      display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 0.75em; font-weight: 800;
+    }
+    .wof-score-tag.l1 { background: #06d6a018; color: #05a880; }
+    .wof-score-tag.l2 { background: #4361ee18; color: var(--blue); }
+    .wof-score-tag.l3 { background: #7209b718; color: var(--purple); }
+    .wof-message { color: #666; font-size: 0.9em; font-style: italic; line-height: 1.4; margin-top: 4px; }
+    .wof-loading { text-align: center; color: #aaa; font-weight: 700; padding: 20px; }
+    .wof-empty { text-align: center; color: #bbb; font-weight: 700; padding: 20px; font-size: 0.95em; }
+
     /* ---- CONFETTI ---- */
     #confetti-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1000; overflow: hidden; }
     .confetti-piece { position: absolute; width: 10px; height: 10px; border-radius: 2px; animation: confettiFall 1.5s ease-out forwards; }
@@ -413,6 +455,22 @@
       <div class="stat-item"><div class="stat-value" id="stat-streak">0</div><div class="stat-label">Best Streak</div></div>
     </div>
     <button class="btn-play-again" onclick="showLevelSelect()">Play Again!</button>
+
+    <div class="wall-of-fame">
+      <h3>✍️ Wall of Fame</h3>
+      <div id="wof-form-area">
+        <div class="wof-sign-form" id="wof-sign-form">
+          <label for="wof-name">Your explorer name</label>
+          <input type="text" id="wof-name" placeholder="e.g. Captain Geography" maxlength="30">
+          <label for="wof-msg">Leave a message <span style="color:#bbb;">(optional)</span></label>
+          <textarea id="wof-msg" placeholder="That was awesome!" maxlength="120"></textarea>
+          <button class="btn-sign" id="btn-sign" onclick="signWallOfFame()">Sign the Wall! ✨</button>
+        </div>
+      </div>
+      <div class="wof-entries" id="wof-entries">
+        <div class="wof-loading">Loading signatures...</div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1738,6 +1796,17 @@ function showResults() {
     localStorage.setItem('geomath-l3-unlocked', 'true');
     unlockEl.innerHTML = '<div class="unlock-banner">🎉 You unlocked Geo Master! ⭐</div>';
   }
+
+  // Reset sign form and load wall of fame
+  document.getElementById('wof-form-area').innerHTML = `
+    <div class="wof-sign-form" id="wof-sign-form">
+      <label for="wof-name">Your explorer name</label>
+      <input type="text" id="wof-name" placeholder="e.g. Captain Geography" maxlength="30">
+      <label for="wof-msg">Leave a message <span style="color:#bbb;">(optional)</span></label>
+      <textarea id="wof-msg" placeholder="That was awesome!" maxlength="120"></textarea>
+      <button class="btn-sign" id="btn-sign" onclick="signWallOfFame()">Sign the Wall! ✨</button>
+    </div>`;
+  loadWallOfFame();
 }
 
 // ==================== UI HELPERS ====================
@@ -1772,6 +1841,85 @@ function spawnConfetti(count) {
     p.style.animationDuration = `${1+Math.random()*1.5}s`; p.style.animationDelay = `${Math.random()*0.5}s`;
     container.appendChild(p); setTimeout(() => p.remove(), 3000);
   }
+}
+
+// ==================== WALL OF FAME (Firebase REST API) ====================
+const FIREBASE_URL = 'https://geomath2-9ae5f-default-rtdb.firebaseio.com';
+
+async function loadWallOfFame() {
+  const container = document.getElementById('wof-entries');
+  container.innerHTML = '<div class="wof-loading">Loading signatures...</div>';
+  try {
+    const res = await fetch(`${FIREBASE_URL}/guestbook.json?orderBy="ts"&limitToLast=50`);
+    const data = await res.json();
+    if (!data || Object.keys(data).length === 0) {
+      container.innerHTML = '<div class="wof-empty">No signatures yet — be the first! 🌟</div>';
+      return;
+    }
+    // Convert to array and sort newest first
+    const entries = Object.values(data).sort((a, b) => b.ts - a.ts);
+    container.innerHTML = '';
+    const levelNames = { 1: '🌱 L1', 2: '🧠 L2', 3: '⭐ L3' };
+    const levelClasses = { 1: 'l1', 2: 'l2', 3: 'l3' };
+    entries.forEach(e => {
+      const div = document.createElement('div');
+      div.className = 'wof-entry';
+      const date = new Date(e.ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      div.innerHTML = `
+        <div class="wof-entry-header">
+          <span class="wof-name">${escapeHtml(e.name)}</span>
+          <span class="wof-meta">
+            <span class="wof-score-tag ${levelClasses[e.level] || 'l1'}">${levelNames[e.level] || 'L1'} · ${e.score} pts</span>
+            &nbsp;${date}
+          </span>
+        </div>
+        ${e.msg ? `<div class="wof-message">"${escapeHtml(e.msg)}"</div>` : ''}
+      `;
+      container.appendChild(div);
+    });
+  } catch (err) {
+    container.innerHTML = '<div class="wof-empty">Could not load signatures right now.</div>';
+  }
+}
+
+async function signWallOfFame() {
+  const nameInput = document.getElementById('wof-name');
+  const msgInput = document.getElementById('wof-msg');
+  const btn = document.getElementById('btn-sign');
+  const name = nameInput.value.trim();
+  if (!name) { nameInput.style.borderColor = '#ef476f'; nameInput.focus(); return; }
+  nameInput.style.borderColor = '';
+  btn.disabled = true;
+  btn.textContent = 'Signing...';
+
+  const entry = {
+    name: name.slice(0, 30),
+    msg: msgInput.value.trim().slice(0, 120),
+    level: state.level,
+    score: state.score,
+    ts: Date.now()
+  };
+
+  try {
+    await fetch(`${FIREBASE_URL}/guestbook.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry)
+    });
+    // Replace form with confirmation
+    document.getElementById('wof-form-area').innerHTML = '<div class="wof-signed">✅ Signed! You\'re on the Wall of Fame!</div>';
+    loadWallOfFame();
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Sign the Wall! ✨';
+    alert('Oops, could not sign right now. Try again!');
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
 }
 
 // ==================== INIT ====================
